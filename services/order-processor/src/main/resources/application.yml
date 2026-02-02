@@ -1,0 +1,49 @@
+# Converted from: src/OrderProcessor/appsettings.json
+# Order Processor configuration
+
+spring:
+  application:
+    name: order-processor
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/orderingdb
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
+        instance:
+          service-url: http://localhost:9105
+
+server:
+  port: 9105
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env,loggers
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.eshop: DEBUG

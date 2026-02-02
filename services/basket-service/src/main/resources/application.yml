@@ -1,0 +1,55 @@
+# Converted from: src/Basket.API/appsettings.json
+# Basket Service configuration
+
+spring:
+  application:
+    name: basket-service
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
+        instance:
+          service-url: http://localhost:9103
+
+server:
+  port: 9103
+
+# gRPC server
+grpc:
+  server:
+    port: 9113
+
+# Security - Identity Service
+identity:
+  url: http://localhost:9100
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env,loggers
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.eshop: DEBUG

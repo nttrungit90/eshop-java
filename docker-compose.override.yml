@@ -1,0 +1,70 @@
+# Local development overrides
+# This file is automatically picked up by docker compose
+#
+# Usage: docker compose up --build
+
+services:
+  # Development mode - mount source for hot reload if needed
+  postgres:
+    ports:
+      - "5432:5432"
+
+  redis:
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  # Enable debug ports for remote debugging
+  identity-service:
+    environment:
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+    ports:
+      - "9100:9100"
+      - "5005:5005"
+
+  catalog-service:
+    environment:
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006"
+    ports:
+      - "9101:9101"
+      - "5006:5005"
+
+  basket-service:
+    environment:
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5007"
+    ports:
+      - "9103:9103"
+      - "9113:9113"
+      - "5007:5005"
+
+  ordering-api:
+    environment:
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5008"
+    ports:
+      - "9102:9102"
+      - "5008:5005"
+
+  order-processor:
+    environment:
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5009"
+    ports:
+      - "9105:9105"
+      - "5009:5005"
+
+  payment-processor:
+    environment:
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5010"
+    ports:
+      - "9106:9106"
+      - "5010:5005"
+
+  webhooks-service:
+    environment:
+      JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5011"
+    ports:
+      - "9104:9104"
+      - "5011:5005"

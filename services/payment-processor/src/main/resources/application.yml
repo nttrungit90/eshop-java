@@ -1,0 +1,35 @@
+# Converted from: src/PaymentProcessor/appsettings.json
+# Payment Processor configuration
+
+spring:
+  application:
+    name: payment-processor
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
+        instance:
+          service-url: http://localhost:9106
+
+server:
+  port: 9106
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env,loggers
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.eshop: DEBUG

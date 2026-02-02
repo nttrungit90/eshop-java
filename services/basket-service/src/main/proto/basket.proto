@@ -1,0 +1,49 @@
+/**
+ * Converted from: src/Basket.API/Proto/basket.proto
+ * gRPC service definition for basket operations.
+ */
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.eshop.basket.grpc";
+option java_outer_classname = "BasketProto";
+
+package basket;
+
+service Basket {
+  rpc GetBasket(GetBasketRequest) returns (CustomerBasketResponse);
+  rpc UpdateBasket(UpdateBasketRequest) returns (CustomerBasketResponse);
+  rpc DeleteBasket(DeleteBasketRequest) returns (DeleteBasketResponse);
+}
+
+message GetBasketRequest {
+  string buyer_id = 1;
+}
+
+message UpdateBasketRequest {
+  string buyer_id = 1;
+  repeated BasketItem items = 2;
+}
+
+message DeleteBasketRequest {
+  string buyer_id = 1;
+}
+
+message CustomerBasketResponse {
+  string buyer_id = 1;
+  repeated BasketItem items = 2;
+}
+
+message DeleteBasketResponse {
+  bool success = 1;
+}
+
+message BasketItem {
+  string id = 1;
+  int64 product_id = 2;
+  string product_name = 3;
+  double unit_price = 4;
+  double old_unit_price = 5;
+  int32 quantity = 6;
+  string picture_url = 7;
+}

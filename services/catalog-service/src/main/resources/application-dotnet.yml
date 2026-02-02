@@ -1,0 +1,45 @@
+# Profile for running alongside .NET services
+# Use: ./mvnw -pl services/catalog-service spring-boot:run -Dspring-boot.run.profiles=dotnet
+
+spring:
+  datasource:
+    # Connect to .NET Aspire's PostgreSQL (check port with: docker ps | grep postgres)
+    url: jdbc:postgresql://localhost:60176/catalogdb
+    username: postgres
+    password: 71UhdH_{f7C+yPyrh92RRW
+
+  rabbitmq:
+    # From Aspire: amqp://guest:WBpzyj95KTuVkpGxR5Fx1j@localhost:60175
+    addresses: localhost:60175
+    username: guest
+    password: WBpzyj95KTuVkpGxR5Fx1j
+
+  flyway:
+    # Don't run migrations - .NET already created schema
+    enabled: false
+
+  jpa:
+    hibernate:
+      # Don't validate or modify .NET's schema
+      ddl-auto: none
+      naming:
+        # Use exact names from @Table/@Column annotations (preserve PascalCase)
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        # Quote all identifiers to preserve PascalCase in PostgreSQL
+        globally_quoted_identifiers: true
+        globally_quoted_identifiers_skip_column_definitions: true
+
+server:
+  # Use different port than .NET Catalog.API (60221)
+  port: 9101
+
+# Disable security for testing (no auth required)
+identity:
+  url: disabled
+
+logging:
+  level:
+    com.eshop: DEBUG
+    org.springframework.web: DEBUG

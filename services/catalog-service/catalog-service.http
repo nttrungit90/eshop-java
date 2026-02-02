@@ -1,0 +1,93 @@
+# Catalog Service HTTP Test Requests
+# Converted from: src/Catalog.API/Catalog.API.http
+# Use with VS Code REST Client extension or IntelliJ HTTP Client
+
+@baseUrl = http://localhost:9101
+
+### Health Check
+GET {{baseUrl}}/actuator/health
+
+### OpenAPI Spec
+GET {{baseUrl}}/v3/api-docs
+
+### Get all catalog items (paginated)
+GET {{baseUrl}}/api/catalog/items?pageIndex=0&pageSize=10
+
+### Get catalog item by ID
+GET {{baseUrl}}/api/catalog/items/1
+
+### Get items by type and brand
+GET {{baseUrl}}/api/catalog/items/type/1/brand/2
+
+### Get items by type only
+GET {{baseUrl}}/api/catalog/items/type/1
+
+### Get items by name (search)
+GET {{baseUrl}}/api/catalog/items/by/Trail
+
+### Get item picture
+GET {{baseUrl}}/api/catalog/items/1/pic
+
+### Get items with semantic relevance (AI search)
+GET {{baseUrl}}/api/catalog/items/withsemanticrelevance/hiking boots
+
+### Get catalog types
+GET {{baseUrl}}/api/catalog/catalogtypes
+
+### Get catalog brands
+GET {{baseUrl}}/api/catalog/catalogbrands
+
+### Get multiple items by IDs
+GET {{baseUrl}}/api/catalog/items/by?ids=1&ids=2&ids=3
+
+### Create new item
+POST {{baseUrl}}/api/catalog/items
+Content-Type: application/json
+
+{
+  "name": "Test Item",
+  "description": "Test Description",
+  "price": 99.99,
+  "pictureFileName": "test.webp",
+  "catalogType": { "id": 1 },
+  "catalogBrand": { "id": 1 },
+  "availableStock": 100,
+  "restockThreshold": 10,
+  "maxStockThreshold": 200
+}
+
+### Update item (V2 - id in path)
+PUT {{baseUrl}}/api/catalog/items/1
+Content-Type: application/json
+
+{
+  "name": "Updated Item",
+  "description": "Updated Description",
+  "price": 109.99,
+  "pictureFileName": "1.webp",
+  "catalogType": { "id": 1 },
+  "catalogBrand": { "id": 1 },
+  "availableStock": 50,
+  "restockThreshold": 10,
+  "maxStockThreshold": 200
+}
+
+### Update item (V1 - id in body)
+PUT {{baseUrl}}/api/catalog/items
+Content-Type: application/json
+
+{
+  "id": 1,
+  "name": "Updated Item V1",
+  "description": "Updated via V1 endpoint",
+  "price": 119.99,
+  "pictureFileName": "1.webp",
+  "catalogType": { "id": 1 },
+  "catalogBrand": { "id": 1 },
+  "availableStock": 50,
+  "restockThreshold": 10,
+  "maxStockThreshold": 200
+}
+
+### Delete item
+DELETE {{baseUrl}}/api/catalog/items/999

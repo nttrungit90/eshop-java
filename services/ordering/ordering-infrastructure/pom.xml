@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Converted from: src/Ordering.Infrastructure/Ordering.Infrastructure.csproj
+  .NET Project: Ordering.Infrastructure
+
+  Infrastructure layer with repositories and data access.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.eshop</groupId>
+        <artifactId>ordering</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>ordering-infrastructure</artifactId>
+    <name>eShop Ordering Infrastructure</name>
+    <description>Infrastructure layer with repositories</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.eshop</groupId>
+            <artifactId>ordering-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+</project>
