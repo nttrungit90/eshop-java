@@ -46,16 +46,16 @@ public interface CatalogItemRepository extends JpaRepository<CatalogItem, Intege
     Page<CatalogItem> findByNameStartingWith(String name, Pageable pageable);
 
     @EntityGraph(attributePaths = {"catalogType", "catalogBrand"})
-    @Query("SELECT c FROM CatalogItem c WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%')) AND c.catalogType.id = :typeId")
-    Page<CatalogItem> findByNameContainingAndCatalogTypeId(String name, Integer typeId, Pageable pageable);
+    @Query("SELECT c FROM CatalogItem c WHERE LOWER(c.name) LIKE LOWER(CONCAT(:name, '%')) AND c.catalogType.id = :typeId")
+    Page<CatalogItem> findByNameStartingWithAndCatalogTypeId(String name, Integer typeId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"catalogType", "catalogBrand"})
-    @Query("SELECT c FROM CatalogItem c WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%')) AND c.catalogBrand.id = :brandId")
-    Page<CatalogItem> findByNameContainingAndCatalogBrandId(String name, Integer brandId, Pageable pageable);
+    @Query("SELECT c FROM CatalogItem c WHERE LOWER(c.name) LIKE LOWER(CONCAT(:name, '%')) AND c.catalogBrand.id = :brandId")
+    Page<CatalogItem> findByNameStartingWithAndCatalogBrandId(String name, Integer brandId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"catalogType", "catalogBrand"})
-    @Query("SELECT c FROM CatalogItem c WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%')) AND c.catalogType.id = :typeId AND c.catalogBrand.id = :brandId")
-    Page<CatalogItem> findByNameContainingAndCatalogTypeIdAndCatalogBrandId(String name, Integer typeId, Integer brandId, Pageable pageable);
+    @Query("SELECT c FROM CatalogItem c WHERE LOWER(c.name) LIKE LOWER(CONCAT(:name, '%')) AND c.catalogType.id = :typeId AND c.catalogBrand.id = :brandId")
+    Page<CatalogItem> findByNameStartingWithAndCatalogTypeIdAndCatalogBrandId(String name, Integer typeId, Integer brandId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"catalogType", "catalogBrand"})
     List<CatalogItem> findByIdIn(List<Integer> ids);

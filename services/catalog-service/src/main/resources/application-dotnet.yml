@@ -4,13 +4,13 @@
 spring:
   datasource:
     # Connect to .NET Aspire's PostgreSQL (check port with: docker ps | grep postgres)
-    url: jdbc:postgresql://localhost:60176/catalogdb
+    url: jdbc:postgresql://localhost:52026/catalogdb
     username: postgres
     password: 71UhdH_{f7C+yPyrh92RRW
 
   rabbitmq:
     # From Aspire: amqp://guest:WBpzyj95KTuVkpGxR5Fx1j@localhost:60175
-    addresses: localhost:60175
+    addresses: localhost:52025
     username: guest
     password: WBpzyj95KTuVkpGxR5Fx1j
 
@@ -36,8 +36,6 @@ server:
   port: 9101
 
 # Disable security for testing (no auth required)
-identity:
-  url: disabled
 
 logging:
   level:

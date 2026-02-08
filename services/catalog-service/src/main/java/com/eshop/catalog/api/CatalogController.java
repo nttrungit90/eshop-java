@@ -81,21 +81,21 @@ public class CatalogController {
         if ("1.0".equals(apiVersion)) {
             page = itemRepository.findAll(PageRequest.of(pageIndex, pageSize, Sort.by("name")));
         } else {
-            // V2 with filters
+            // V2 with filters - .NET uses StartsWith for name filter
             if (name != null && type != null && brand != null) {
-                page = itemRepository.findByNameContainingAndCatalogTypeIdAndCatalogBrandId(
+                page = itemRepository.findByNameStartingWithAndCatalogTypeIdAndCatalogBrandId(
                         name, type, brand, PageRequest.of(pageIndex, pageSize, Sort.by("name")));
             } else if (name != null && type != null) {
-                page = itemRepository.findByNameContainingAndCatalogTypeId(
+                page = itemRepository.findByNameStartingWithAndCatalogTypeId(
                         name, type, PageRequest.of(pageIndex, pageSize, Sort.by("name")));
             } else if (name != null && brand != null) {
-                page = itemRepository.findByNameContainingAndCatalogBrandId(
+                page = itemRepository.findByNameStartingWithAndCatalogBrandId(
                         name, brand, PageRequest.of(pageIndex, pageSize, Sort.by("name")));
             } else if (type != null && brand != null) {
                 page = itemRepository.findByCatalogTypeIdAndCatalogBrandId(
                         type, brand, PageRequest.of(pageIndex, pageSize, Sort.by("name")));
             } else if (name != null) {
-                page = itemRepository.findByNameContaining(name, PageRequest.of(pageIndex, pageSize, Sort.by("name")));
+                page = itemRepository.findByNameStartingWith(name, PageRequest.of(pageIndex, pageSize, Sort.by("name")));
             } else if (type != null) {
                 page = itemRepository.findByCatalogTypeId(type, PageRequest.of(pageIndex, pageSize, Sort.by("name")));
             } else if (brand != null) {
@@ -233,47 +233,68 @@ public class CatalogController {
     }
 
     /**
-     * GET /items/type/{typeId}/brand/{brandId?} - V1 only
+     * GET /items/type/{typeId}/brand/{brandId} - V1 only (with brand)
      */
     @GetMapping("/items/type/{typeId}/brand/{brandId}")
     @Operation(summary = "Get items by type and brand (V1)", description = "Filter catalog items by type and brand")
     public ResponseEntity<PaginatedItemsDto<CatalogItemDto>> getItemsByTypeAndBrand(
             @Parameter(description = "API version", required = true) @RequestParam("api-version") String apiVersion,
             @PathVariable Integer typeId,
-            @PathVariable(required = false) Integer brandId,
+            @PathVariable Integer brandId,
             @RequestParam(defaultValue = "0") int pageIndex,
             @RequestParam(defaultValue = "10") int pageSize) {
 
-        Page<CatalogItem> page;
-        if (brandId != null) {
-            page = itemRepository.findByCatalogTypeIdAndCatalogBrandId(
-                    typeId, brandId, PageRequest.of(pageIndex, pageSize, Sort.by("name")));
-        } else {
-            page = itemRepository.findByCatalogTypeId(
-                    typeId, PageRequest.of(pageIndex, pageSize, Sort.by("name")));
-        }
+        Page<CatalogItem> page = itemRepository.findByCatalogTypeIdAndCatalogBrandId(
+                typeId, brandId, PageRequest.of(pageIndex, pageSize, Sort.by("name")));
         return ResponseEntity.ok(new PaginatedItemsDto<>(
                 pageIndex, pageSize, page.getTotalElements(), catalogMapper.toDtoList(page.getContent())));
     }
 
     /**
-     * GET /items/type/all/brand/{brandId?} - V1 only
+     * GET /items/type/{typeId}/brand - V1 only (without brand, optional in .NET as {brandId?})
+     */
+    @GetMapping("/items/type/{typeId}/brand")
+    @Operation(summary = "Get items by type (V1)", description = "Filter catalog items by type only")
+    public ResponseEntity<PaginatedItemsDto<CatalogItemDto>> getItemsByType(
+            @Parameter(description = "API version", required = true) @RequestParam("api-version") String apiVersion,
+            @PathVariable Integer typeId,
+            @RequestParam(defaultValue = "0") int pageIndex,
+            @RequestParam(defaultValue = "10") int pageSize) {
+
+        Page<CatalogItem> page = itemRepository.findByCatalogTypeId(
+                typeId, PageRequest.of(pageIndex, pageSize, Sort.by("name")));
+        return ResponseEntity.ok(new PaginatedItemsDto<>(
+                pageIndex, pageSize, page.getTotalElements(), catalogMapper.toDtoList(page.getContent())));
+    }
+
+    /**
+     * GET /items/type/all/brand/{brandId} - V1 only (with brand)
      */
     @GetMapping("/items/type/all/brand/{brandId}")
     @Operation(summary = "Get items by brand (V1)", description = "Filter catalog items by brand")
     public ResponseEntity<PaginatedItemsDto<CatalogItemDto>> getItemsByBrand(
             @Parameter(description = "API version", required = true) @RequestParam("api-version") String apiVersion,
-            @PathVariable(required = false) Integer brandId,
+            @PathVariable Integer brandId,
             @RequestParam(defaultValue = "0") int pageIndex,
             @RequestParam(defaultValue = "10") int pageSize) {
 
-        Page<CatalogItem> page;
-        if (brandId != null) {
-            page = itemRepository.findByCatalogBrandId(
-                    brandId, PageRequest.of(pageIndex, pageSize, Sort.by("name")));
-        } else {
-            page = itemRepository.findAll(PageRequest.of(pageIndex, pageSize, Sort.by("name")));
-        }
+        Page<CatalogItem> page = itemRepository.findByCatalogBrandId(
+                brandId, PageRequest.of(pageIndex, pageSize, Sort.by("name")));
+        return ResponseEntity.ok(new PaginatedItemsDto<>(
+                pageIndex, pageSize, page.getTotalElements(), catalogMapper.toDtoList(page.getContent())));
+    }
+
+    /**
+     * GET /items/type/all/brand - V1 only (without brand, optional in .NET as {brandId?})
+     */
+    @GetMapping("/items/type/all/brand")
+    @Operation(summary = "Get all items (V1)", description = "Get all catalog items")
+    public ResponseEntity<PaginatedItemsDto<CatalogItemDto>> getItemsAllBrands(
+            @Parameter(description = "API version", required = true) @RequestParam("api-version") String apiVersion,
+            @RequestParam(defaultValue = "0") int pageIndex,
+            @RequestParam(defaultValue = "10") int pageSize) {
+
+        Page<CatalogItem> page = itemRepository.findAll(PageRequest.of(pageIndex, pageSize, Sort.by("name")));
         return ResponseEntity.ok(new PaginatedItemsDto<>(
                 pageIndex, pageSize, page.getTotalElements(), catalogMapper.toDtoList(page.getContent())));
     }
@@ -282,46 +303,50 @@ public class CatalogController {
 
     /**
      * POST /items - Both V1 and V2
+     * Returns 201 Created with location header (matching .NET behavior)
      */
     @PostMapping("/items")
     @Operation(summary = "Create item", description = "Create a new catalog item")
-    public ResponseEntity<CatalogItemDto> createItem(
+    public ResponseEntity<Void> createItem(
             @Parameter(description = "API version", required = true) @RequestParam("api-version") String apiVersion,
             @Valid @RequestBody CatalogItem item) {
         CatalogItem saved = catalogService.createItem(item);
-        return ResponseEntity.status(HttpStatus.CREATED).body(catalogMapper.toDto(saved));
+        return ResponseEntity.created(
+                java.net.URI.create("/api/catalog/items/" + saved.getId())).build();
     }
 
     /**
      * PUT /items/{id} - V2 only (id in path)
+     * Returns 201 Created with location header (matching .NET behavior)
      */
     @PutMapping("/items/{id}")
     @Operation(summary = "Update item (V2)", description = "Update an existing catalog item")
-    public ResponseEntity<CatalogItemDto> updateItem(
+    public ResponseEntity<Void> updateItem(
             @Parameter(description = "API version", required = true) @RequestParam("api-version") String apiVersion,
             @PathVariable Integer id,
             @Valid @RequestBody CatalogItem item) {
         item.setId(id);
         return catalogService.updateItem(item)
-                .map(catalogMapper::toDto)
-                .map(ResponseEntity::ok)
+                .<ResponseEntity<Void>>map(updated -> ResponseEntity.created(
+                        java.net.URI.create("/api/catalog/items/" + id)).build())
                 .orElse(ResponseEntity.notFound().build());
     }
 
     /**
      * PUT /items - V1 only (id in body)
+     * Returns 201 Created with location header (matching .NET behavior)
      */
     @PutMapping("/items")
     @Operation(summary = "Update item (V1)", description = "Update an existing catalog item (id in body)")
-    public ResponseEntity<CatalogItemDto> updateItemV1(
+    public ResponseEntity<Void> updateItemV1(
             @Parameter(description = "API version", required = true) @RequestParam("api-version") String apiVersion,
             @Valid @RequestBody CatalogItem item) {
         if (item.getId() == null) {
             return ResponseEntity.badRequest().build();
         }
         return catalogService.updateItem(item)
-                .map(catalogMapper::toDto)
-                .map(ResponseEntity::ok)
+                .<ResponseEntity<Void>>map(updated -> ResponseEntity.created(
+                        java.net.URI.create("/api/catalog/items/" + item.getId())).build())
                 .orElse(ResponseEntity.notFound().build());
     }
 
