@@ -370,7 +370,7 @@ public class CatalogController {
     /**
      * GET /catalogtypes - Both V1 and V2
      */
-    @GetMapping("/catalogtypes")
+    @GetMapping("/catalogTypes")
     @Operation(summary = "Get catalog types", description = "Returns all catalog types")
     public ResponseEntity<List<CatalogTypeDto>> getCatalogTypes(
             @Parameter(description = "API version", required = true) @RequestParam("api-version") String apiVersion) {
@@ -380,7 +380,7 @@ public class CatalogController {
     /**
      * GET /catalogbrands - Both V1 and V2
      */
-    @GetMapping("/catalogbrands")
+    @GetMapping("/catalogBrands")
     @Operation(summary = "Get catalog brands", description = "Returns all catalog brands")
     public ResponseEntity<List<CatalogBrandDto>> getCatalogBrands(
             @Parameter(description = "API version", required = true) @RequestParam("api-version") String apiVersion) {

@@ -3,14 +3,12 @@
 
 spring:
   datasource:
-    # Connect to .NET Aspire's PostgreSQL (check port with: docker ps | grep postgres)
-    url: jdbc:postgresql://localhost:52026/catalogdb
+    url: jdbc:postgresql://localhost:5432/catalogdb
     username: postgres
     password: 71UhdH_{f7C+yPyrh92RRW
 
   rabbitmq:
-    # From Aspire: amqp://guest:WBpzyj95KTuVkpGxR5Fx1j@localhost:60175
-    addresses: localhost:52025
+    addresses: localhost:5672
     username: guest
     password: WBpzyj95KTuVkpGxR5Fx1j
 
@@ -32,8 +30,9 @@ spring:
         globally_quoted_identifiers_skip_column_definitions: true
 
 server:
-  # Use different port than .NET Catalog.API (60221)
+  # Fixed port matching .NET Aspire (9101 for catalog)
   port: 9101
+  address: 127.0.0.1  # Bind to localhost specifically
 
 # Disable security for testing (no auth required)
 
