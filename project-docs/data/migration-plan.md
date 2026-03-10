@@ -42,7 +42,7 @@ Most Java services already have full implementations. The two stub services (pay
 - [x] P2-T4: Remove old stub event handler (OrderStatusChangedEventHandler)
 - [x] P2-T5: Update application.yml with Aspire-managed Postgres/RabbitMQ credentials and OTLP config
 - [x] P2-T6: Verify compilation and run tests
-- [ ] P2-T7: Add order-processor to docker-compose.yml
+- [x] P2-T7: Add order-processor to docker-compose.yml
 - [ ] P2-T8: Update .NET AppHost Program.cs with `useJavaOrderProcessor` flag
 
 ## Phase 3: Webhooks Service (already implemented — config + integration)

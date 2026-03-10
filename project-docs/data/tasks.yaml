@@ -272,7 +272,7 @@ phases:
           Needs host.docker.internal for Postgres and RabbitMQ.
         java_files:
           - docker-compose.yml
-        status: pending
+        status: done
 
       - id: P2-T8
         name: Update .NET AppHost

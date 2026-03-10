@@ -35,10 +35,11 @@
 - **P2-T4**: Removed old stub event handler (OrderStatusChangedEventHandler)
 - **P2-T5**: Updated application.yml with Aspire credentials, OTLP, background-task config
 - **P2-T6**: Verified compilation and tests pass (BUILD SUCCESS)
+- **P2-T7**: Added order-processor to docker-compose.yml with Postgres + RabbitMQ via host.docker.internal
 
 ## Next Task
 
-**P2-T7**: Add order-processor to docker-compose.yml
+**P2-T8**: Update .NET AppHost Program.cs with `useJavaOrderProcessor` flag
 
 ## Notes
 
