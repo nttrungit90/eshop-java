@@ -207,7 +207,7 @@ phases:
           - src/OrderProcessor/Events/GracePeriodConfirmedIntegrationEvent.cs
         java_files:
           - services/order-processor/src/main/java/com/eshop/orderprocessor/events/GracePeriodConfirmedIntegrationEvent.java
-        status: pending
+        status: done
 
       - id: P2-T2
         name: Create BackgroundTaskOptions configuration

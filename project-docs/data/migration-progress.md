@@ -27,9 +27,13 @@
 - **P1-T7**: Added payment-processor to docker-compose.yml with Aspire infra via host.docker.internal
 - **P1-T8**: Updated .NET AppHost Program.cs with `useJavaPaymentProcessor = true` flag
 
+### Phase 2: Order Processor
+
+- **P2-T1**: Created GracePeriodConfirmedIntegrationEvent class
+
 ## Next Task
 
-**P2-T1**: Create GracePeriodConfirmedIntegrationEvent class (Phase 2 — Order Processor)
+**P2-T2**: Create BackgroundTaskOptions configuration class (gracePeriodTime, checkUpdateTime)
 
 ## Notes
 
