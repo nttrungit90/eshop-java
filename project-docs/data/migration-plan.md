@@ -38,7 +38,7 @@ Most Java services already have full implementations. The two stub services (pay
 
 - [x] P2-T1: Create GracePeriodConfirmedIntegrationEvent class
 - [x] P2-T2: Create BackgroundTaskOptions configuration class (gracePeriodTime, checkUpdateTime)
-- [ ] P2-T3: Implement GracePeriodManagerService — scheduled task that queries orderingdb for orders past grace period and publishes GracePeriodConfirmedIntegrationEvent
+- [x] P2-T3: Implement GracePeriodManagerService — scheduled task that queries orderingdb for orders past grace period and publishes GracePeriodConfirmedIntegrationEvent
 - [ ] P2-T4: Remove old stub event handler (OrderStatusChangedEventHandler)
 - [ ] P2-T5: Update application.yml with Aspire-managed Postgres/RabbitMQ credentials and OTLP config
 - [ ] P2-T6: Verify compilation and run tests

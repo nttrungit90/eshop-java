@@ -31,10 +31,11 @@
 
 - **P2-T1**: Created GracePeriodConfirmedIntegrationEvent class
 - **P2-T2**: Created BackgroundTaskOptions configuration class + enabled `@EnableScheduling`
+- **P2-T3**: Implemented GracePeriodManagerService — `@Scheduled` task using JdbcTemplate to query orderingdb, publishes GracePeriodConfirmedIntegrationEvent
 
 ## Next Task
 
-**P2-T3**: Implement GracePeriodManagerService — scheduled task that queries orderingdb and publishes events
+**P2-T4**: Remove old stub event handler (OrderStatusChangedEventHandler)
 
 ## Notes
 

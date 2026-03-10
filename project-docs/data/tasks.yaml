@@ -232,8 +232,8 @@ phases:
         dotnet_files:
           - src/OrderProcessor/Services/GracePeriodManagerService.cs
         java_files:
-          - services/order-processor/src/main/java/com/eshop/orderprocessor/services/GracePeriodManagerService.java
-        status: pending
+          - services/order-processor/src/main/java/com/eshop/orderprocessor/service/GracePeriodManagerService.java
+        status: done
 
       - id: P2-T4
         name: Remove old stub event handler
