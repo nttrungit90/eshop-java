@@ -242,7 +242,7 @@ phases:
           Order processor doesn't consume events — it polls the DB and publishes.
         java_files:
           - services/order-processor/src/main/java/com/eshop/orderprocessor/events/OrderStatusChangedEventHandler.java
-        status: pending
+        status: done
 
       - id: P2-T5
         name: Update application.yml
