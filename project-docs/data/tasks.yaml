@@ -310,7 +310,7 @@ phases:
         name: Add to docker-compose.yml
         java_files:
           - docker-compose.yml
-        status: pending
+        status: done
 
       - id: P3-T4
         name: Update .NET AppHost

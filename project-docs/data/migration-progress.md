@@ -42,10 +42,11 @@
 
 - **P3-T1**: Updated application.yml with Aspire credentials, OTLP, quoted identifiers, ddl-auto: none
 - **P3-T2**: Verified compilation and tests pass (BUILD SUCCESS)
+- **P3-T3**: Added webhooks-service to docker-compose.yml
 
 ## Next Task
 
-**P3-T3**: Add webhooks-service to docker-compose.yml
+**P3-T4**: Update .NET AppHost Program.cs with `useJavaWebhooks` flag
 
 ## Notes
 
