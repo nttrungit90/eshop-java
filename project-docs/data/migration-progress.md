@@ -24,10 +24,11 @@
 - **P1-T4**: Removed old stub event handler (OrderStatusChangedToPaidEventHandler)
 - **P1-T5**: Updated application.yml with Aspire-managed RabbitMQ credentials (`WBpzyj95KTuVkpGxR5Fx1j`), OTLP tracing/metrics, server address `0.0.0.0`
 - **P1-T6**: Verified compilation and tests pass (BUILD SUCCESS)
+- **P1-T7**: Added payment-processor to docker-compose.yml with Aspire infra via host.docker.internal
 
 ## Next Task
 
-**P1-T7**: Add payment-processor to docker-compose.yml
+**P1-T8**: Update .NET AppHost Program.cs with `useJavaPaymentProcessor` flag
 
 ## Notes
 

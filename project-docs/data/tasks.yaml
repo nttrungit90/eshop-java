@@ -179,7 +179,7 @@ phases:
           Reference: catalog-service entry in docker-compose.yml.
         java_files:
           - docker-compose.yml
-        status: pending
+        status: done
 
       - id: P1-T8
         name: Update .NET AppHost

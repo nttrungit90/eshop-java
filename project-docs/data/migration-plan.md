@@ -31,7 +31,7 @@ Most Java services already have full implementations. The two stub services (pay
 - [x] P1-T4: Remove old stub event handler (OrderStatusChangedToPaidEventHandler)
 - [x] P1-T5: Update application.yml with Aspire-managed RabbitMQ credentials and OTLP config
 - [x] P1-T6: Verify compilation and run tests
-- [ ] P1-T7: Add payment-processor to docker-compose.yml
+- [x] P1-T7: Add payment-processor to docker-compose.yml
 - [ ] P1-T8: Update .NET AppHost Program.cs with `useJavaPaymentProcessor` flag
 
 ## Phase 2: Order Processor (background worker — RabbitMQ + Postgres)
