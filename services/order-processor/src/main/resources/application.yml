@@ -40,17 +40,6 @@ background-task:
   check-update-time: 30
 
 management:
-  tracing:
-    enabled: true
-    sampling:
-      probability: 1.0
-  otlp:
-    tracing:
-      endpoint: http://localhost:4318/v1/traces
-    metrics:
-      export:
-        enabled: true
-        url: http://localhost:4318/v1/metrics
   endpoints:
     web:
       exposure:

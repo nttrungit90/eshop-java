@@ -13,8 +13,11 @@ import java.util.List;
 
 public class OrderStatusChangedToAwaitingValidationIntegrationEvent extends IntegrationEvent {
 
-    private final long orderId;
-    private final List<OrderStockItem> orderStockItems;
+    private long orderId;
+    private List<OrderStockItem> orderStockItems;
+
+    public OrderStatusChangedToAwaitingValidationIntegrationEvent() {
+    }
 
     public OrderStatusChangedToAwaitingValidationIntegrationEvent(long orderId, List<OrderStockItem> orderStockItems) {
         this.orderId = orderId;

@@ -53,22 +53,11 @@ catalog:
   ai:
     enabled: false
 
-# Security - Identity Service
+# Security - Identity Service (.NET Identity API HTTP endpoint)
 identity:
-  url: http://localhost:9100
+  url: http://localhost:5223
 
 management:
-  tracing:
-    enabled: true
-    sampling:
-      probability: 1.0
-  otlp:
-    tracing:
-      endpoint: http://localhost:4318/v1/traces
-    metrics:
-      export:
-        enabled: true
-        url: http://localhost:4318/v1/metrics
   endpoints:
     web:
       exposure:
@@ -86,4 +75,4 @@ springdoc:
 logging:
   level:
     com.eshop: DEBUG
-    org.springframework.web: DEBUG
+    org.springframework.web: INFO

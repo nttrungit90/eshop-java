@@ -41,22 +41,11 @@ server:
   port: 9104
   address: 0.0.0.0
 
-# Security - Identity Service
+# Security - Identity Service (.NET Identity API HTTP endpoint)
 identity:
-  url: http://localhost:9100
+  url: http://localhost:5223
 
 management:
-  tracing:
-    enabled: true
-    sampling:
-      probability: 1.0
-  otlp:
-    tracing:
-      endpoint: http://localhost:4318/v1/traces
-    metrics:
-      export:
-        enabled: true
-        url: http://localhost:4318/v1/metrics
   endpoints:
     web:
       exposure:
