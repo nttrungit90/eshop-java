@@ -304,7 +304,7 @@ phases:
 
       - id: P3-T2
         name: Verify compilation
-        status: pending
+        status: done
 
       - id: P3-T3
         name: Add to docker-compose.yml

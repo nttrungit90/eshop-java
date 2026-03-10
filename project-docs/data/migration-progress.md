@@ -41,10 +41,11 @@
 ### Phase 3: Webhooks Service
 
 - **P3-T1**: Updated application.yml with Aspire credentials, OTLP, quoted identifiers, ddl-auto: none
+- **P3-T2**: Verified compilation and tests pass (BUILD SUCCESS)
 
 ## Next Task
 
-**P3-T2**: Verify compilation and run tests
+**P3-T3**: Add webhooks-service to docker-compose.yml
 
 ## Notes
 
