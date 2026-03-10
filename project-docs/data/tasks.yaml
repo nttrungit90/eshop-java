@@ -169,7 +169,7 @@ phases:
         description: |
           Run: ./mvnw compile -pl services/payment-processor -am
           Fix any compilation errors.
-        status: pending
+        status: done
 
       - id: P1-T7
         name: Add to docker-compose.yml

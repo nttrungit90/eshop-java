@@ -23,10 +23,11 @@
 - **P1-T3**: Implemented OrderStatusChangedToStockConfirmedIntegrationEventHandler — consumes stock confirmed event, checks PaymentOptions, publishes success/failure event
 - **P1-T4**: Removed old stub event handler (OrderStatusChangedToPaidEventHandler)
 - **P1-T5**: Updated application.yml with Aspire-managed RabbitMQ credentials (`WBpzyj95KTuVkpGxR5Fx1j`), OTLP tracing/metrics, server address `0.0.0.0`
+- **P1-T6**: Verified compilation and tests pass (BUILD SUCCESS)
 
 ## Next Task
 
-**P1-T6**: Verify compilation and run tests
+**P1-T7**: Add payment-processor to docker-compose.yml
 
 ## Notes
 
