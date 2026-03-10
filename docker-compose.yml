@@ -71,7 +71,7 @@ services:
     image: codecentric/spring-boot-admin:3.4.1
     container_name: eshop-admin
     ports:
-      - "9090:8080"
+      - "9090:8181"
     environment:
       SPRING_APPLICATION_NAME: eShop-Admin
       SPRING_BOOT_ADMIN_TITLE: eShop Dashboard
@@ -108,7 +108,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/identitydb
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8080
+      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       OTEL_SERVICE_NAME: identity-service
     depends_on:
@@ -137,7 +137,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8080
+      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       OTEL_SERVICE_NAME: catalog-service
       IDENTITY_URL: http://identity-service:9100
@@ -168,7 +168,7 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATA_REDIS_HOST: redis
       SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8080
+      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       OTEL_SERVICE_NAME: basket-service
       IDENTITY_URL: http://identity-service:9100
@@ -200,7 +200,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8080
+      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       OTEL_SERVICE_NAME: ordering-api
       IDENTITY_URL: http://identity-service:9100
@@ -232,7 +232,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8080
+      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       OTEL_SERVICE_NAME: order-processor
     depends_on:
@@ -260,7 +260,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8080
+      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       OTEL_SERVICE_NAME: payment-processor
     depends_on:
@@ -287,7 +287,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8080
+      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
       OTEL_SERVICE_NAME: webhooks-service
       IDENTITY_URL: http://identity-service:9100

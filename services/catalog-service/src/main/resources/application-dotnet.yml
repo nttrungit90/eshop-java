@@ -2,6 +2,12 @@
 # Use: ./mvnw -pl services/catalog-service spring-boot:run -Dspring-boot.run.profiles=dotnet
 
 spring:
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
+        instance:
+          service-url: http://host.docker.internal:9101
   datasource:
     url: jdbc:postgresql://localhost:5432/catalogdb
     username: postgres
@@ -32,7 +38,7 @@ spring:
 server:
   # Fixed port matching .NET Aspire (9101 for catalog)
   port: 9101
-  address: 127.0.0.1  # Bind to localhost specifically
+  address: 0.0.0.0
 
 # Disable security for testing (no auth required)
 
@@ -40,3 +46,20 @@ logging:
   level:
     com.eshop: DEBUG
     org.springframework.web: DEBUG
+
+management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+    metrics:
+      export:
+        enabled: true
+        url: http://localhost:4318/v1/metrics
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
