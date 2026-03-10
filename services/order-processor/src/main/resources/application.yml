@@ -1,5 +1,5 @@
-# Converted from: src/OrderProcessor/appsettings.json
 # Order Processor configuration
+# Running alongside .NET Aspire services
 
 spring:
   application:
@@ -8,7 +8,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/orderingdb
     username: postgres
-    password: postgres
+    password: 71UhdH_{f7C+yPyrh92RRW
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -20,22 +20,37 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
   rabbitmq:
-    host: localhost
-    port: 5672
+    addresses: localhost:5672
     username: guest
-    password: guest
+    password: WBpzyj95KTuVkpGxR5Fx1j
 
   boot:
     admin:
       client:
         url: http://localhost:9090
         instance:
-          service-url: http://localhost:9105
+          service-url: http://host.docker.internal:9105
 
 server:
   port: 9105
+  address: 0.0.0.0
+
+background-task:
+  grace-period-time: 1
+  check-update-time: 30
 
 management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+    metrics:
+      export:
+        enabled: true
+        url: http://localhost:4318/v1/metrics
   endpoints:
     web:
       exposure:

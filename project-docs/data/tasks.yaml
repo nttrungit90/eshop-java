@@ -256,7 +256,7 @@ phases:
           - Add JPA quoted identifiers for PascalCase columns
         java_files:
           - services/order-processor/src/main/resources/application.yml
-        status: pending
+        status: done
 
       - id: P2-T6
         name: Verify compilation

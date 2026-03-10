@@ -40,7 +40,7 @@ Most Java services already have full implementations. The two stub services (pay
 - [x] P2-T2: Create BackgroundTaskOptions configuration class (gracePeriodTime, checkUpdateTime)
 - [x] P2-T3: Implement GracePeriodManagerService — scheduled task that queries orderingdb for orders past grace period and publishes GracePeriodConfirmedIntegrationEvent
 - [x] P2-T4: Remove old stub event handler (OrderStatusChangedEventHandler)
-- [ ] P2-T5: Update application.yml with Aspire-managed Postgres/RabbitMQ credentials and OTLP config
+- [x] P2-T5: Update application.yml with Aspire-managed Postgres/RabbitMQ credentials and OTLP config
 - [ ] P2-T6: Verify compilation and run tests
 - [ ] P2-T7: Add order-processor to docker-compose.yml
 - [ ] P2-T8: Update .NET AppHost Program.cs with `useJavaOrderProcessor` flag

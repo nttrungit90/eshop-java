@@ -33,10 +33,11 @@
 - **P2-T2**: Created BackgroundTaskOptions configuration class + enabled `@EnableScheduling`
 - **P2-T3**: Implemented GracePeriodManagerService — `@Scheduled` task using JdbcTemplate to query orderingdb, publishes GracePeriodConfirmedIntegrationEvent
 - **P2-T4**: Removed old stub event handler (OrderStatusChangedEventHandler)
+- **P2-T5**: Updated application.yml with Aspire credentials, OTLP, background-task config
 
 ## Next Task
 
-**P2-T5**: Update application.yml with Aspire-managed Postgres/RabbitMQ credentials and OTLP config
+**P2-T6**: Verify compilation and run tests
 
 ## Notes
 
