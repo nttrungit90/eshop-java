@@ -38,9 +38,13 @@
 - **P2-T7**: Added order-processor to docker-compose.yml with Postgres + RabbitMQ via host.docker.internal
 - **P2-T8**: Updated .NET AppHost Program.cs with `useJavaOrderProcessor = true` flag
 
+### Phase 3: Webhooks Service
+
+- **P3-T1**: Updated application.yml with Aspire credentials, OTLP, quoted identifiers, ddl-auto: none
+
 ## Next Task
 
-**P3-T1**: Update webhooks-service application.yml with Aspire-managed Postgres/RabbitMQ credentials and OTLP config (Phase 3 — Webhooks Service)
+**P3-T2**: Verify compilation and run tests
 
 ## Notes
 

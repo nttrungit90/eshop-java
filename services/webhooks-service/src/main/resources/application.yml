@@ -1,5 +1,5 @@
-# Converted from: src/Webhooks.API/appsettings.json
 # Webhooks Service configuration
+# Running alongside .NET Aspire services
 
 spring:
   application:
@@ -8,38 +8,55 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/webhooksdb
     username: postgres
-    password: postgres
+    password: 71UhdH_{f7C+yPyrh92RRW
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        globally_quoted_identifiers: true
+        globally_quoted_identifiers_skip_column_definitions: true
+    generate-ddl: false
 
   rabbitmq:
-    host: localhost
-    port: 5672
+    addresses: localhost:5672
     username: guest
-    password: guest
+    password: WBpzyj95KTuVkpGxR5Fx1j
 
   boot:
     admin:
       client:
         url: http://localhost:9090
         instance:
-          service-url: http://localhost:9104
+          service-url: http://host.docker.internal:9104
 
 server:
   port: 9104
+  address: 0.0.0.0
 
 # Security - Identity Service
 identity:
   url: http://localhost:9100
 
 management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+    metrics:
+      export:
+        enabled: true
+        url: http://localhost:4318/v1/metrics
   endpoints:
     web:
       exposure:

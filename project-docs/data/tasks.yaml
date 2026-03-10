@@ -300,7 +300,7 @@ phases:
           Update webhooks-service application.yml with Aspire credentials, OTLP config.
         java_files:
           - services/webhooks-service/src/main/resources/application.yml
-        status: pending
+        status: done
 
       - id: P3-T2
         name: Verify compilation
