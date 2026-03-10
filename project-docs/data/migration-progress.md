@@ -1,6 +1,6 @@
 # Migration Progress
 
-## Current Phase: Phase 1 — Payment Processor
+## Current Phase: Phase 2 — Order Processor
 
 ## Completed Tasks
 
@@ -25,10 +25,11 @@
 - **P1-T5**: Updated application.yml with Aspire-managed RabbitMQ credentials (`WBpzyj95KTuVkpGxR5Fx1j`), OTLP tracing/metrics, server address `0.0.0.0`
 - **P1-T6**: Verified compilation and tests pass (BUILD SUCCESS)
 - **P1-T7**: Added payment-processor to docker-compose.yml with Aspire infra via host.docker.internal
+- **P1-T8**: Updated .NET AppHost Program.cs with `useJavaPaymentProcessor = true` flag
 
 ## Next Task
 
-**P1-T8**: Update .NET AppHost Program.cs with `useJavaPaymentProcessor` flag
+**P2-T1**: Create GracePeriodConfirmedIntegrationEvent class (Phase 2 — Order Processor)
 
 ## Notes
 

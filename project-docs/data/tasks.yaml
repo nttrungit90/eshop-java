@@ -189,7 +189,7 @@ phases:
           When false: original behavior.
         dotnet_files:
           - src/eShop.AppHost/Program.cs
-        status: pending
+        status: done
 
   - id: phase-2
     name: Order Processor
