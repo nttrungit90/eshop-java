@@ -94,7 +94,7 @@ phases:
     description: "Simplest service — no DB, only RabbitMQ. Replace stub with real event handling."
     java_module: services/payment-processor
     dotnet_source: src/PaymentProcessor
-    status: in_progress
+    status: done
     tasks:
       - id: P1-T1
         name: Create integration event classes
@@ -196,7 +196,7 @@ phases:
     description: "Background worker — queries orderingdb for grace period orders, publishes events."
     java_module: services/order-processor
     dotnet_source: src/OrderProcessor
-    status: pending
+    status: done
     tasks:
       - id: P2-T1
         name: Create GracePeriodConfirmedIntegrationEvent
@@ -287,7 +287,7 @@ phases:
     description: "Already implemented. Config updates and integration testing."
     java_module: services/webhooks-service
     dotnet_source: src/Webhooks.API
-    status: pending
+    status: done
     tasks:
       - id: P3-T0
         name: Implement webhooks-service
@@ -323,7 +323,7 @@ phases:
     description: "Already implemented (DDD multi-module). Config updates and integration testing."
     java_module: services/ordering/ordering-api
     dotnet_source: src/Ordering.API
-    status: pending
+    status: in_progress
     tasks:
       - id: P4-T0a
         name: Implement ordering-domain
