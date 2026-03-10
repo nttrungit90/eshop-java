@@ -37,7 +37,7 @@ Most Java services already have full implementations. The two stub services (pay
 ## Phase 2: Order Processor (background worker — RabbitMQ + Postgres)
 
 - [x] P2-T1: Create GracePeriodConfirmedIntegrationEvent class
-- [ ] P2-T2: Create BackgroundTaskOptions configuration class (gracePeriodTime, checkUpdateTime)
+- [x] P2-T2: Create BackgroundTaskOptions configuration class (gracePeriodTime, checkUpdateTime)
 - [ ] P2-T3: Implement GracePeriodManagerService — scheduled task that queries orderingdb for orders past grace period and publishes GracePeriodConfirmedIntegrationEvent
 - [ ] P2-T4: Remove old stub event handler (OrderStatusChangedEventHandler)
 - [ ] P2-T5: Update application.yml with Aspire-managed Postgres/RabbitMQ credentials and OTLP config

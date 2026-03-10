@@ -30,10 +30,11 @@
 ### Phase 2: Order Processor
 
 - **P2-T1**: Created GracePeriodConfirmedIntegrationEvent class
+- **P2-T2**: Created BackgroundTaskOptions configuration class + enabled `@EnableScheduling`
 
 ## Next Task
 
-**P2-T2**: Create BackgroundTaskOptions configuration class (gracePeriodTime, checkUpdateTime)
+**P2-T3**: Implement GracePeriodManagerService — scheduled task that queries orderingdb and publishes events
 
 ## Notes
 

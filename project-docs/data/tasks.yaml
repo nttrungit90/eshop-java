@@ -219,7 +219,7 @@ phases:
           - src/OrderProcessor/BackgroundTaskOptions.cs
         java_files:
           - services/order-processor/src/main/java/com/eshop/orderprocessor/config/BackgroundTaskOptions.java
-        status: pending
+        status: done
 
       - id: P2-T3
         name: Implement GracePeriodManagerService
