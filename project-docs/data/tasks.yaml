@@ -263,7 +263,7 @@ phases:
         description: |
           Run: ./mvnw compile -pl services/order-processor -am
           Fix any compilation errors.
-        status: pending
+        status: done
 
       - id: P2-T7
         name: Add to docker-compose.yml

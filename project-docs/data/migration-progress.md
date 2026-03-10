@@ -34,10 +34,11 @@
 - **P2-T3**: Implemented GracePeriodManagerService — `@Scheduled` task using JdbcTemplate to query orderingdb, publishes GracePeriodConfirmedIntegrationEvent
 - **P2-T4**: Removed old stub event handler (OrderStatusChangedEventHandler)
 - **P2-T5**: Updated application.yml with Aspire credentials, OTLP, background-task config
+- **P2-T6**: Verified compilation and tests pass (BUILD SUCCESS)
 
 ## Next Task
 
-**P2-T6**: Verify compilation and run tests
+**P2-T7**: Add order-processor to docker-compose.yml
 
 ## Notes
 
