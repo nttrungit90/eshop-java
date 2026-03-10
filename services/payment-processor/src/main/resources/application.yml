@@ -30,6 +30,9 @@ management:
     health:
       show-details: always
 
+payment:
+  payment-succeeded: true
+
 logging:
   level:
     com.eshop: DEBUG

@@ -1,0 +1,515 @@
+# Migration Tasks
+# Machine-readable task list for tracking migration progress.
+# Status: pending | in_progress | done | blocked
+
+phases:
+  - id: phase-0
+    name: Common Libraries & Catalog Service
+    description: "Foundation libraries and first service migration. Completed pre-plan."
+    status: done
+    tasks:
+      - id: P0-T1
+        name: Implement service-defaults
+        description: "ServiceDefaultsAutoConfiguration, JwtSecurityConfig, ResilientHttpClientConfig"
+        java_files:
+          - common/service-defaults/src/main/java/com/eshop/servicedefaults/config/ServiceDefaultsAutoConfiguration.java
+          - common/service-defaults/src/main/java/com/eshop/servicedefaults/security/JwtSecurityConfig.java
+        dotnet_files:
+          - src/eShop.ServiceDefaults/Extensions.cs
+        status: done
+
+      - id: P0-T2
+        name: Implement event-bus
+        description: "EventBus interface, IntegrationEvent base class, IntegrationEventHandler interface"
+        java_files:
+          - common/event-bus/src/main/java/com/eshop/eventbus/EventBus.java
+          - common/event-bus/src/main/java/com/eshop/eventbus/IntegrationEvent.java
+          - common/event-bus/src/main/java/com/eshop/eventbus/IntegrationEventHandler.java
+        dotnet_files:
+          - src/EventBus/Abstractions/IEventBus.cs
+          - src/EventBus/Events/IntegrationEvent.cs
+        status: done
+
+      - id: P0-T3
+        name: Implement event-bus-rabbitmq
+        description: "RabbitMQEventBus, RabbitMQConfig, exchange/queue setup"
+        java_files:
+          - common/event-bus-rabbitmq/src/main/java/com/eshop/eventbus/rabbitmq/RabbitMQEventBus.java
+          - common/event-bus-rabbitmq/src/main/java/com/eshop/eventbus/rabbitmq/RabbitMQConfig.java
+        dotnet_files:
+          - src/EventBusRabbitMQ/RabbitMQEventBus.cs
+        status: done
+
+      - id: P0-T4
+        name: Implement integration-event-log
+        description: "Outbox pattern - IntegrationEventLogEntry, IntegrationEventLogService"
+        java_files:
+          - common/integration-event-log/src/main/java/com/eshop/eventbus/outbox/IntegrationEventLogEntry.java
+          - common/integration-event-log/src/main/java/com/eshop/eventbus/outbox/IntegrationEventLogService.java
+        dotnet_files:
+          - src/IntegrationEventLogEF/IntegrationEventLogEntry.cs
+          - src/IntegrationEventLogEF/Services/IntegrationEventLogService.cs
+        status: done
+
+      - id: P0-T5
+        name: Implement catalog-service
+        description: "CatalogController, JPA entities, repositories, CatalogAIService"
+        java_files:
+          - services/catalog-service/src/main/java/com/eshop/catalog/api/CatalogController.java
+          - services/catalog-service/src/main/java/com/eshop/catalog/model/CatalogItem.java
+        dotnet_files:
+          - src/Catalog.API/Apis/CatalogApi.cs
+          - src/Catalog.API/Model/CatalogItem.cs
+        status: done
+
+      - id: P0-T6
+        name: Implement catalog integration events and handlers
+        description: "ProductPriceChanged, OrderStockConfirmed/Rejected events and handlers"
+        java_files:
+          - services/catalog-service/src/main/java/com/eshop/catalog/events/ProductPriceChangedIntegrationEvent.java
+          - services/catalog-service/src/main/java/com/eshop/catalog/service/CatalogIntegrationEventService.java
+        status: done
+
+      - id: P0-T7
+        name: Configure catalog application.yml for Aspire infra
+        java_files:
+          - services/catalog-service/src/main/resources/application.yml
+        status: done
+
+      - id: P0-T8
+        name: Add catalog-service to docker-compose.yml
+        java_files:
+          - docker-compose.yml
+        status: done
+
+      - id: P0-T9
+        name: Update .NET AppHost with useJavaCatalog flag
+        dotnet_files:
+          - src/eShop.AppHost/Program.cs
+          - src/eShop.AppHost/Extensions.cs
+        status: done
+
+  - id: phase-1
+    name: Payment Processor
+    description: "Simplest service — no DB, only RabbitMQ. Replace stub with real event handling."
+    java_module: services/payment-processor
+    dotnet_source: src/PaymentProcessor
+    status: in_progress
+    tasks:
+      - id: P1-T1
+        name: Create integration event classes
+        description: |
+          Create 3 event classes in com.eshop.paymentprocessor.events:
+          - OrderStatusChangedToStockConfirmedIntegrationEvent (orderId)
+          - OrderPaymentSucceededIntegrationEvent (orderId)
+          - OrderPaymentFailedIntegrationEvent (orderId)
+          All extend IntegrationEvent with no-arg constructor + orderId constructor.
+        dotnet_files:
+          - src/PaymentProcessor/IntegrationEvents/Events/OrderStatusChangedToStockConfirmedIntegrationEvent.cs
+          - src/PaymentProcessor/IntegrationEvents/Events/OrderPaymentSucceededIntegrationEvent.cs
+          - src/PaymentProcessor/IntegrationEvents/Events/OrderPaymentFailedIntegrationEvent.cs
+        java_files:
+          - services/payment-processor/src/main/java/com/eshop/paymentprocessor/events/OrderStatusChangedToStockConfirmedIntegrationEvent.java
+          - services/payment-processor/src/main/java/com/eshop/paymentprocessor/events/OrderPaymentSucceededIntegrationEvent.java
+          - services/payment-processor/src/main/java/com/eshop/paymentprocessor/events/OrderPaymentFailedIntegrationEvent.java
+        status: done
+
+      - id: P1-T2
+        name: Create PaymentOptions configuration class
+        description: |
+          Create PaymentOptions config class with boolean paymentSucceeded property.
+          Use @ConfigurationProperties(prefix = "payment") bound to application.yml.
+          Add payment.paymentSucceeded=true default in application.yml.
+        dotnet_files:
+          - src/PaymentProcessor/PaymentOptions.cs
+        java_files:
+          - services/payment-processor/src/main/java/com/eshop/paymentprocessor/config/PaymentOptions.java
+        status: done
+
+      - id: P1-T3
+        name: Implement event handler
+        description: |
+          Create OrderStatusChangedToStockConfirmedIntegrationEventHandler:
+          - @RabbitListener on payment-processor queue
+          - Deserialize OrderStatusChangedToStockConfirmedIntegrationEvent from message
+          - Check PaymentOptions.paymentSucceeded
+          - If true: publish OrderPaymentSucceededIntegrationEvent via EventBus
+          - If false: publish OrderPaymentFailedIntegrationEvent via EventBus
+          Reference .NET: OrderStatusChangedToStockConfirmedIntegrationEventHandler.cs
+        dotnet_files:
+          - src/PaymentProcessor/IntegrationEvents/EventHandling/OrderStatusChangedToStockConfirmedIntegrationEventHandler.cs
+        java_files:
+          - services/payment-processor/src/main/java/com/eshop/paymentprocessor/events/OrderStatusChangedToStockConfirmedIntegrationEventHandler.java
+        status: pending
+
+      - id: P1-T4
+        name: Remove old stub event handler
+        description: |
+          Delete OrderStatusChangedToPaidEventHandler.java (the stub).
+          It is replaced by the new handler from P1-T3.
+        java_files:
+          - services/payment-processor/src/main/java/com/eshop/paymentprocessor/events/OrderStatusChangedToPaidEventHandler.java
+        status: pending
+
+      - id: P1-T5
+        name: Update application.yml
+        description: |
+          Update payment-processor application.yml:
+          - RabbitMQ password: WBpzyj95KTuVkpGxR5Fx1j
+          - Add OTLP tracing/metrics endpoints
+          - Add server.address: 0.0.0.0
+          - Add payment.paymentSucceeded: true
+          Reference: catalog-service application.yml for format
+        java_files:
+          - services/payment-processor/src/main/resources/application.yml
+        status: pending
+
+      - id: P1-T6
+        name: Verify compilation
+        description: |
+          Run: ./mvnw compile -pl services/payment-processor -am
+          Fix any compilation errors.
+        status: pending
+
+      - id: P1-T7
+        name: Add to docker-compose.yml
+        description: |
+          Add payment-processor service to eshop-java/docker-compose.yml.
+          Connect to Aspire infra via host.docker.internal.
+          Reference: catalog-service entry in docker-compose.yml.
+        java_files:
+          - docker-compose.yml
+        status: pending
+
+      - id: P1-T8
+        name: Update .NET AppHost
+        description: |
+          Add useJavaPaymentProcessor flag to eShop AppHost Program.cs.
+          When true: skip .NET PaymentProcessor project.
+          When false: original behavior.
+        dotnet_files:
+          - src/eShop.AppHost/Program.cs
+        status: pending
+
+  - id: phase-2
+    name: Order Processor
+    description: "Background worker — queries orderingdb for grace period orders, publishes events."
+    java_module: services/order-processor
+    dotnet_source: src/OrderProcessor
+    status: pending
+    tasks:
+      - id: P2-T1
+        name: Create GracePeriodConfirmedIntegrationEvent
+        description: |
+          Create event class with orderId field.
+          Extends IntegrationEvent.
+        dotnet_files:
+          - src/OrderProcessor/Events/GracePeriodConfirmedIntegrationEvent.cs
+        java_files:
+          - services/order-processor/src/main/java/com/eshop/orderprocessor/events/GracePeriodConfirmedIntegrationEvent.java
+        status: pending
+
+      - id: P2-T2
+        name: Create BackgroundTaskOptions configuration
+        description: |
+          Create config class with gracePeriodTime (minutes) and checkUpdateTime (seconds).
+          Use @ConfigurationProperties(prefix = "background-task").
+          Add defaults in application.yml.
+        dotnet_files:
+          - src/OrderProcessor/BackgroundTaskOptions.cs
+        java_files:
+          - services/order-processor/src/main/java/com/eshop/orderprocessor/config/BackgroundTaskOptions.java
+        status: pending
+
+      - id: P2-T3
+        name: Implement GracePeriodManagerService
+        description: |
+          Scheduled background service that:
+          1. Runs every checkUpdateTime seconds (@Scheduled)
+          2. Queries ordering.orders for orders where (now - OrderDate >= gracePeriodTime) AND OrderStatus = 'Submitted'
+          3. For each matching order, publishes GracePeriodConfirmedIntegrationEvent
+          Uses JdbcTemplate or native query (matches .NET Npgsql approach).
+        dotnet_files:
+          - src/OrderProcessor/Services/GracePeriodManagerService.cs
+        java_files:
+          - services/order-processor/src/main/java/com/eshop/orderprocessor/services/GracePeriodManagerService.java
+        status: pending
+
+      - id: P2-T4
+        name: Remove old stub event handler
+        description: |
+          Delete OrderStatusChangedEventHandler.java (the stub).
+          Order processor doesn't consume events — it polls the DB and publishes.
+        java_files:
+          - services/order-processor/src/main/java/com/eshop/orderprocessor/events/OrderStatusChangedEventHandler.java
+        status: pending
+
+      - id: P2-T5
+        name: Update application.yml
+        description: |
+          Update order-processor application.yml:
+          - Postgres password: 71UhdH_{f7C+yPyrh92RRW
+          - RabbitMQ password: WBpzyj95KTuVkpGxR5Fx1j
+          - Add OTLP tracing/metrics endpoints
+          - Add server.address: 0.0.0.0
+          - Add background-task.gracePeriodTime and checkUpdateTime
+          - Add JPA quoted identifiers for PascalCase columns
+        java_files:
+          - services/order-processor/src/main/resources/application.yml
+        status: pending
+
+      - id: P2-T6
+        name: Verify compilation
+        description: |
+          Run: ./mvnw compile -pl services/order-processor -am
+          Fix any compilation errors.
+        status: pending
+
+      - id: P2-T7
+        name: Add to docker-compose.yml
+        description: |
+          Add order-processor service to docker-compose.yml.
+          Needs host.docker.internal for Postgres and RabbitMQ.
+        java_files:
+          - docker-compose.yml
+        status: pending
+
+      - id: P2-T8
+        name: Update .NET AppHost
+        description: |
+          Add useJavaOrderProcessor flag to eShop AppHost Program.cs.
+        dotnet_files:
+          - src/eShop.AppHost/Program.cs
+        status: pending
+
+  - id: phase-3
+    name: Webhooks Service
+    description: "Already implemented. Config updates and integration testing."
+    java_module: services/webhooks-service
+    dotnet_source: src/Webhooks.API
+    status: pending
+    tasks:
+      - id: P3-T0
+        name: Implement webhooks-service
+        description: "WebhooksController, WebhookSubscription model, repository, event handlers (pre-plan)"
+        status: done
+
+      - id: P3-T1
+        name: Update application.yml
+        description: |
+          Update webhooks-service application.yml with Aspire credentials, OTLP config.
+        java_files:
+          - services/webhooks-service/src/main/resources/application.yml
+        status: pending
+
+      - id: P3-T2
+        name: Verify compilation
+        status: pending
+
+      - id: P3-T3
+        name: Add to docker-compose.yml
+        java_files:
+          - docker-compose.yml
+        status: pending
+
+      - id: P3-T4
+        name: Update .NET AppHost
+        dotnet_files:
+          - src/eShop.AppHost/Program.cs
+        status: pending
+
+  - id: phase-4
+    name: Ordering API
+    description: "Already implemented (DDD multi-module). Config updates and integration testing."
+    java_module: services/ordering/ordering-api
+    dotnet_source: src/Ordering.API
+    status: pending
+    tasks:
+      - id: P4-T0a
+        name: Implement ordering-domain
+        description: "Order/Buyer aggregates, domain events, value objects (pre-plan)"
+        status: done
+
+      - id: P4-T0b
+        name: Implement ordering-infrastructure
+        description: "JPA repositories, entity configurations (pre-plan)"
+        status: done
+
+      - id: P4-T0c
+        name: Implement ordering-api
+        description: "OrdersController, commands, queries, integration events (pre-plan)"
+        status: done
+
+      - id: P4-T1
+        name: Update application.yml
+        java_files:
+          - services/ordering/ordering-api/src/main/resources/application.yml
+        status: pending
+
+      - id: P4-T2
+        name: Verify compilation
+        status: pending
+
+      - id: P4-T3
+        name: Add to docker-compose.yml
+        java_files:
+          - docker-compose.yml
+        status: pending
+
+      - id: P4-T4
+        name: Update .NET AppHost
+        dotnet_files:
+          - src/eShop.AppHost/Program.cs
+        status: pending
+
+  - id: phase-5
+    name: Basket Service
+    description: "Already implemented (REST + gRPC). Config updates and integration testing."
+    java_module: services/basket-service
+    dotnet_source: src/Basket.API
+    status: pending
+    tasks:
+      - id: P5-T0
+        name: Implement basket-service
+        description: "BasketController, BasketGrpcService, Redis repository, protobuf, events (pre-plan)"
+        status: done
+
+      - id: P5-T1
+        name: Update application.yml
+        java_files:
+          - services/basket-service/src/main/resources/application.yml
+        status: pending
+
+      - id: P5-T2
+        name: Verify compilation
+        status: pending
+
+      - id: P5-T3
+        name: Add to docker-compose.yml
+        java_files:
+          - docker-compose.yml
+        status: pending
+
+      - id: P5-T4
+        name: Update .NET AppHost
+        dotnet_files:
+          - src/eShop.AppHost/Program.cs
+        status: pending
+
+  - id: phase-6
+    name: Identity Service
+    description: "Last backend service. All services depend on it for JWT validation."
+    java_module: services/identity-service
+    dotnet_source: src/Identity.API
+    status: pending
+    tasks:
+      - id: P6-T0
+        name: Implement identity-service
+        description: "AuthorizationServerConfig, OAuth2/OIDC flows, user management, client registrations (pre-plan)"
+        status: done
+
+      - id: P6-T1
+        name: Update application.yml
+        java_files:
+          - services/identity-service/src/main/resources/application.yml
+        status: pending
+
+      - id: P6-T2
+        name: Verify token compatibility
+        description: |
+          Ensure Java Identity produces tokens compatible with .NET services:
+          - Same issuer URL
+          - Same signing key format
+          - OIDC discovery endpoint at /.well-known/openid-configuration
+        status: pending
+
+      - id: P6-T3
+        name: Verify compilation
+        status: pending
+
+      - id: P6-T4
+        name: Add to docker-compose.yml
+        java_files:
+          - docker-compose.yml
+        status: pending
+
+      - id: P6-T5
+        name: Update .NET AppHost
+        description: |
+          Disable .NET Identity.API, point all services to Java identity at localhost:9100.
+        dotnet_files:
+          - src/eShop.AppHost/Program.cs
+        status: pending
+
+  - id: phase-7
+    name: WebApp
+    description: "React SPA. Point to Java backends."
+    java_module: clients/webapp
+    dotnet_source: src/WebApp
+    status: pending
+    tasks:
+      - id: P7-T0
+        name: Implement webapp
+        description: "React components, API clients, routing, auth integration (pre-plan)"
+        status: done
+
+      - id: P7-T1
+        name: Update environment config
+        java_files:
+          - clients/webapp/.env
+        status: pending
+
+      - id: P7-T2
+        name: Verify build
+        status: pending
+
+      - id: P7-T3
+        name: Add to docker-compose.yml
+        java_files:
+          - docker-compose.yml
+        status: pending
+
+  - id: phase-8
+    name: Migrate Infrastructure
+    description: "Move Postgres, Redis, RabbitMQ from .NET Aspire to docker-compose. Single command startup."
+    status: pending
+    tasks:
+      - id: P8-T1
+        name: Add Postgres to docker-compose.yml
+        java_files:
+          - docker-compose.yml
+          - scripts/init-databases.sql
+        status: pending
+
+      - id: P8-T2
+        name: Add Redis to docker-compose.yml
+        java_files:
+          - docker-compose.yml
+        status: pending
+
+      - id: P8-T3
+        name: Add RabbitMQ to docker-compose.yml
+        java_files:
+          - docker-compose.yml
+        status: pending
+
+      - id: P8-T4
+        name: Update all service configs for docker networking
+        description: |
+          Change all application.yml files to use docker-compose service hostnames
+          instead of host.docker.internal.
+        status: pending
+
+      - id: P8-T5
+        name: Verify full system startup
+        description: |
+          Run: docker compose up --build
+          Verify all services start and can communicate.
+        status: pending
+
+      - id: P8-T6
+        name: Document final startup procedure
+        description: |
+          Update README and remove .NET AppHost dependency.
+          Single command: docker compose up --build
+        status: pending
