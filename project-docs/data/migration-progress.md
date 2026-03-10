@@ -45,6 +45,17 @@
 - **P3-T3**: Added webhooks-service to docker-compose.yml
 - **P3-T4**: Updated .NET AppHost Program.cs with `useJavaWebhooks = true` flag (re-enabled after fixing identity.url to point to .NET Identity)
 
+### Cross-cutting: .NET/Java Interop Fixes
+
+- **JWT auth**: Fixed identity.url to point to .NET Identity HTTP endpoint (localhost:5223) in catalog-service and webhooks-service
+- **JWT security**: Added selective BearerTokenResolver to skip token validation on permitAll endpoints
+- **Event bus serialization**: Configured ObjectMapper with PascalCase naming + ISO dates to match .NET System.Text.Json
+- **Event bus double-encoding**: Fixed RabbitMQEventBus to send event objects directly (not pre-serialized strings)
+- **RabbitMQ routing**: Replaced empty routing key binding with per-event-type bindings (EventBusSubscriptions) matching .NET direct exchange pattern
+- **Event listeners**: Added CatalogEventListener and raw Message listener for payment-processor to dispatch RabbitMQ events to handlers
+- **Event deserialization**: Added default constructors to event classes, ignore unknown .NET fields (FAIL_ON_UNKNOWN_PROPERTIES=false)
+- **OpenTelemetry**: Removed all OTLP dependencies and config (not used)
+
 ## Next Task
 
 **P4-T1**: Update ordering-api application.yml with Aspire-managed Postgres/RabbitMQ credentials and OTLP config (Phase 4 — Ordering API)
@@ -54,3 +65,5 @@
 - Phase 0 was completed before the formal migration plan was created
 - Payment-processor and order-processor are the only stub services needing real implementation
 - Other services (webhooks, ordering, basket, identity, webapp) have full implementations but need config updates
+- All Java services consuming .NET events must use raw Message + ObjectMapper pattern (not typed @RabbitListener params)
+- identity.url must point to .NET Identity HTTP endpoint (localhost:5223) during migration
