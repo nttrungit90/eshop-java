@@ -156,7 +156,7 @@ Remote debugging is enabled on ports 5005-5011 in docker-compose.override.yml.
 
 ## .NET to Java Mapping
 
-This project is a faithful conversion of the .NET eShop reference application. See [CONVERSION_MAP.md](CONVERSION_MAP.md) for detailed mappings between .NET and Java components.
+This project is a faithful conversion of the .NET eShop reference application. See [CONVERSION_MAP.md](project-docs/data/conversion-map.md) for detailed mappings between .NET and Java components.
 
 ### Key Differences
 

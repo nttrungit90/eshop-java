@@ -1,0 +1,12 @@
+{
+  "name": "eshop-migration-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "eShop .NET to Java migration dashboard",
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
+}

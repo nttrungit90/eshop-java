@@ -86,3 +86,4 @@ surefire-reports/
 *.bak
 *.swp
 *~
+node_modules/
