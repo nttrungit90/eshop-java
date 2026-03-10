@@ -51,7 +51,7 @@ Most Java services already have full implementations. The two stub services (pay
 - [x] P3-T1: Update application.yml with Aspire-managed Postgres/RabbitMQ credentials and OTLP config
 - [x] P3-T2: Verify compilation and run tests
 - [x] P3-T3: Add webhooks-service to docker-compose.yml
-- [ ] P3-T4: Update .NET AppHost Program.cs with `useJavaWebhooks` flag
+- [x] P3-T4: Update .NET AppHost Program.cs with `useJavaWebhooks` flag
 
 ## Phase 4: Ordering API (already implemented — config + integration)
 

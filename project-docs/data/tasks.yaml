@@ -316,7 +316,7 @@ phases:
         name: Update .NET AppHost
         dotnet_files:
           - src/eShop.AppHost/Program.cs
-        status: pending
+        status: done
 
   - id: phase-4
     name: Ordering API

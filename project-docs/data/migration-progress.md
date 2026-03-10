@@ -1,6 +1,6 @@
 # Migration Progress
 
-## Current Phase: Phase 3 — Webhooks Service
+## Current Phase: Phase 4 — Ordering API
 
 ## Completed Tasks
 
@@ -43,10 +43,11 @@
 - **P3-T1**: Updated application.yml with Aspire credentials, OTLP, quoted identifiers, ddl-auto: none
 - **P3-T2**: Verified compilation and tests pass (BUILD SUCCESS)
 - **P3-T3**: Added webhooks-service to docker-compose.yml
+- **P3-T4**: Updated .NET AppHost Program.cs with `useJavaWebhooks = true` flag
 
 ## Next Task
 
-**P3-T4**: Update .NET AppHost Program.cs with `useJavaWebhooks` flag
+**P4-T1**: Update ordering-api application.yml with Aspire-managed Postgres/RabbitMQ credentials and OTLP config (Phase 4 — Ordering API)
 
 ## Notes
 
