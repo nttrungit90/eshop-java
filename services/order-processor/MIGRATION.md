@@ -1,6 +1,6 @@
 # Order Processor Migration
 
-**Status:** TODO (priority #3)
+**Status:** DONE
 **.NET Source:** `src/OrderProcessor/`
 **Java Module:** `services/order-processor`
 **Port:** 9105

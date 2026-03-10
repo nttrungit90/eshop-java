@@ -1,6 +1,6 @@
 # Migration Progress
 
-## Current Phase: Phase 2 — Order Processor
+## Current Phase: Phase 3 — Webhooks Service
 
 ## Completed Tasks
 
@@ -36,10 +36,11 @@
 - **P2-T5**: Updated application.yml with Aspire credentials, OTLP, background-task config
 - **P2-T6**: Verified compilation and tests pass (BUILD SUCCESS)
 - **P2-T7**: Added order-processor to docker-compose.yml with Postgres + RabbitMQ via host.docker.internal
+- **P2-T8**: Updated .NET AppHost Program.cs with `useJavaOrderProcessor = true` flag
 
 ## Next Task
 
-**P2-T8**: Update .NET AppHost Program.cs with `useJavaOrderProcessor` flag
+**P3-T1**: Update webhooks-service application.yml with Aspire-managed Postgres/RabbitMQ credentials and OTLP config (Phase 3 — Webhooks Service)
 
 ## Notes
 

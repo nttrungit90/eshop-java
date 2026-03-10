@@ -280,7 +280,7 @@ phases:
           Add useJavaOrderProcessor flag to eShop AppHost Program.cs.
         dotnet_files:
           - src/eShop.AppHost/Program.cs
-        status: pending
+        status: done
 
   - id: phase-3
     name: Webhooks Service
