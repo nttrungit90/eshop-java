@@ -28,7 +28,7 @@ Most Java services already have full implementations. The two stub services (pay
 - [x] P1-T1: Create integration event classes (OrderStatusChangedToStockConfirmedIntegrationEvent, OrderPaymentSucceededIntegrationEvent, OrderPaymentFailedIntegrationEvent)
 - [x] P1-T2: Create PaymentOptions configuration class with `paymentSucceeded` property
 - [x] P1-T3: Implement OrderStatusChangedToStockConfirmedIntegrationEventHandler (replace stub) — consume event, check PaymentOptions, publish success/failure event
-- [ ] P1-T4: Remove old stub event handler (OrderStatusChangedToPaidEventHandler)
+- [x] P1-T4: Remove old stub event handler (OrderStatusChangedToPaidEventHandler)
 - [ ] P1-T5: Update application.yml with Aspire-managed RabbitMQ credentials and OTLP config
 - [ ] P1-T6: Verify compilation and run tests
 - [ ] P1-T7: Add payment-processor to docker-compose.yml

@@ -149,7 +149,7 @@ phases:
           It is replaced by the new handler from P1-T3.
         java_files:
           - services/payment-processor/src/main/java/com/eshop/paymentprocessor/events/OrderStatusChangedToPaidEventHandler.java
-        status: pending
+        status: done
 
       - id: P1-T5
         name: Update application.yml
