@@ -22,10 +22,11 @@
 - **P1-T2**: Created PaymentOptions configuration class with `paymentSucceeded` property (`@ConfigurationProperties`)
 - **P1-T3**: Implemented OrderStatusChangedToStockConfirmedIntegrationEventHandler — consumes stock confirmed event, checks PaymentOptions, publishes success/failure event
 - **P1-T4**: Removed old stub event handler (OrderStatusChangedToPaidEventHandler)
+- **P1-T5**: Updated application.yml with Aspire-managed RabbitMQ credentials (`WBpzyj95KTuVkpGxR5Fx1j`), OTLP tracing/metrics, server address `0.0.0.0`
 
 ## Next Task
 
-**P1-T5**: Update application.yml with Aspire-managed RabbitMQ credentials and OTLP config
+**P1-T6**: Verify compilation and run tests
 
 ## Notes
 

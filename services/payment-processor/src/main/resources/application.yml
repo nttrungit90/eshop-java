@@ -1,15 +1,14 @@
-# Converted from: src/PaymentProcessor/appsettings.json
 # Payment Processor configuration
+# Running alongside .NET Aspire services
 
 spring:
   application:
     name: payment-processor
 
   rabbitmq:
-    host: localhost
-    port: 5672
+    addresses: localhost:5672
     username: guest
-    password: guest
+    password: WBpzyj95KTuVkpGxR5Fx1j
 
   boot:
     admin:
@@ -20,8 +19,23 @@ spring:
 
 server:
   port: 9106
+  address: 0.0.0.0
+
+payment:
+  payment-succeeded: true
 
 management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+    metrics:
+      export:
+        enabled: true
+        url: http://localhost:4318/v1/metrics
   endpoints:
     web:
       exposure:
@@ -29,9 +43,6 @@ management:
   endpoint:
     health:
       show-details: always
-
-payment:
-  payment-succeeded: true
 
 logging:
   level:

@@ -162,7 +162,7 @@ phases:
           Reference: catalog-service application.yml for format
         java_files:
           - services/payment-processor/src/main/resources/application.yml
-        status: pending
+        status: done
 
       - id: P1-T6
         name: Verify compilation
