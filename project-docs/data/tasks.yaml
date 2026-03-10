@@ -140,7 +140,7 @@ phases:
           - src/PaymentProcessor/IntegrationEvents/EventHandling/OrderStatusChangedToStockConfirmedIntegrationEventHandler.cs
         java_files:
           - services/payment-processor/src/main/java/com/eshop/paymentprocessor/events/OrderStatusChangedToStockConfirmedIntegrationEventHandler.java
-        status: pending
+        status: done
 
       - id: P1-T4
         name: Remove old stub event handler
