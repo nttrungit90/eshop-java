@@ -135,6 +135,34 @@ services:
     networks:
       - eshop-network
 
+  basket-service:
+    build:
+      context: ./services/basket-service
+      dockerfile: Dockerfile
+    container_name: eshop-basket
+    ports:
+      - "9103:9103"
+      - "9113:9113"
+    environment:
+      SPRING_DATA_REDIS_HOST: host.docker.internal
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_RABBITMQ_ADDRESSES: host.docker.internal:5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
+      IDENTITY_URL: http://host.docker.internal:5223
+      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
+      SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-URL: http://host.docker.internal:9103
+    depends_on:
+      spring-boot-admin:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9103/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - eshop-network
+
   webhooks-service:
     build:
       context: ./services/webhooks-service

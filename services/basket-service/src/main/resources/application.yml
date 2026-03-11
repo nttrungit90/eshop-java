@@ -1,5 +1,5 @@
-# Converted from: src/Basket.API/appsettings.json
 # Basket Service configuration
+# Running alongside .NET Aspire services
 
 spring:
   application:
@@ -11,17 +11,16 @@ spring:
       port: 6379
 
   rabbitmq:
-    host: localhost
-    port: 5672
+    addresses: localhost:5672
     username: guest
-    password: guest
+    password: WBpzyj95KTuVkpGxR5Fx1j
 
   boot:
     admin:
       client:
         url: http://localhost:9090
         instance:
-          service-url: http://localhost:9103
+          service-url: http://host.docker.internal:9103
 
 server:
   port: 9103
@@ -31,9 +30,9 @@ grpc:
   server:
     port: 9113
 
-# Security - Identity Service
+# Security - Identity Service (.NET Identity API HTTP endpoint)
 identity:
-  url: http://localhost:9100
+  url: http://localhost:5223
 
 management:
   endpoints:
@@ -43,6 +42,12 @@ management:
   endpoint:
     health:
       show-details: always
+  otlp:
+    metrics:
+      export:
+        enabled: false
+    tracing:
+      endpoint: ""
 
 springdoc:
   api-docs:

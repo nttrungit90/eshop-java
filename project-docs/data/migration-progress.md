@@ -56,9 +56,16 @@
 - **Event deserialization**: Added default constructors to event classes, ignore unknown .NET fields (FAIL_ON_UNKNOWN_PROPERTIES=false)
 - **OpenTelemetry**: Removed all OTLP dependencies and config (not used)
 
+### Phase 5: Basket Service
+
+- **P5-T1**: Updated application.yml with Aspire-managed Redis/RabbitMQ credentials (`WBpzyj95KTuVkpGxR5Fx1j`), identity.url to .NET Identity (`localhost:5223`), disabled OTLP metrics/tracing
+- **P5-T2**: Verified compilation and tests pass (BUILD SUCCESS)
+- **P5-T3**: Added basket-service to docker-compose.yml with Redis, RabbitMQ, identity.url via host.docker.internal, ports 9103 (REST) + 9113 (gRPC)
+- **P5-T4**: Updated .NET AppHost Program.cs with `useJavaBasket = true` flag — WebApp connects to Java basket via explicit service URLs for HTTP and gRPC
+
 ## Next Task
 
-**P4-T1**: Update ordering-api application.yml with Aspire-managed Postgres/RabbitMQ credentials and OTLP config (Phase 4 — Ordering API)
+**P4-T1**: Update ordering-api application.yml with Aspire-managed Postgres/RabbitMQ credentials (Phase 4 — Ordering API)
 
 ## Notes
 

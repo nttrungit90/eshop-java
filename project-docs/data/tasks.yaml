@@ -367,7 +367,7 @@ phases:
     description: "Already implemented (REST + gRPC). Config updates and integration testing."
     java_module: services/basket-service
     dotnet_source: src/Basket.API
-    status: pending
+    status: done
     tasks:
       - id: P5-T0
         name: Implement basket-service
@@ -378,23 +378,23 @@ phases:
         name: Update application.yml
         java_files:
           - services/basket-service/src/main/resources/application.yml
-        status: pending
+        status: done
 
       - id: P5-T2
         name: Verify compilation
-        status: pending
+        status: done
 
       - id: P5-T3
         name: Add to docker-compose.yml
         java_files:
           - docker-compose.yml
-        status: pending
+        status: done
 
       - id: P5-T4
         name: Update .NET AppHost
         dotnet_files:
           - src/eShop.AppHost/Program.cs
-        status: pending
+        status: done
 
   - id: phase-6
     name: Identity Service

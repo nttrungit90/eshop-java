@@ -66,10 +66,10 @@ Most Java services already have full implementations. The two stub services (pay
 ## Phase 5: Basket Service (already implemented — config + integration)
 
 - [x] P5-T0: Implement basket-service (REST, gRPC, Redis, protobuf)
-- [ ] P5-T1: Update application.yml with Aspire-managed Redis/RabbitMQ credentials and OTLP config
-- [ ] P5-T2: Verify compilation and run tests
-- [ ] P5-T3: Add basket-service to docker-compose.yml
-- [ ] P5-T4: Update .NET AppHost Program.cs with `useJavaBasket` flag
+- [x] P5-T1: Update application.yml with Aspire-managed Redis/RabbitMQ credentials and OTLP config
+- [x] P5-T2: Verify compilation and run tests
+- [x] P5-T3: Add basket-service to docker-compose.yml
+- [x] P5-T4: Update .NET AppHost Program.cs with `useJavaBasket` flag
 
 ## Phase 6: Identity Service (last backend — all services depend on it)
 
