@@ -31,6 +31,12 @@ management:
   endpoint:
     health:
       show-details: always
+  otlp:
+    metrics:
+      export:
+        enabled: false
+    tracing:
+      endpoint: ""
 
 logging:
   level:

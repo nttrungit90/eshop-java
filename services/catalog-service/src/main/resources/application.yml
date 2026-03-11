@@ -65,6 +65,12 @@ management:
   endpoint:
     health:
       show-details: always
+  otlp:
+    metrics:
+      export:
+        enabled: false
+    tracing:
+      endpoint: ""
 
 springdoc:
   api-docs:
