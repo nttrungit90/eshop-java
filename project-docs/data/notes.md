@@ -127,6 +127,23 @@ Pinned in .NET AppHost so Java services can connect without Aspire service disco
 - **Fix**: Pin ports in the .NET AppHost with `.WithEndpoint(...)`. Then **remove the old Redis container** and **restart the AppHost** so it gets recreated with the new port bindings. Aspire containers with `ContainerLifetime.Persistent` or already-running containers won't pick up port changes automatically.
 - **How to find Redis credentials**: `docker inspect <redis-container> --format '{{range .Config.Env}}{{println .}}{{end}}' | grep REDIS`
 
+### gRPC Interop (.NET WebApp → Java Basket Service)
+
+#### HTTP/2 handshake failure / gRPC "Unavailable" error
+- **Cause**: The Java basket-service proto used `package basket;` but .NET uses `package BasketApi;`. gRPC routes requests to `/{package}.{service}/{method}`, so .NET sent to `/BasketApi.Basket/GetBasket` but Java expected `/basket.Basket/GetBasket`. The mismatch caused the server to reject the request.
+- **Fix**: Update the Java proto file to exactly match the .NET proto — same `package BasketApi;`, same message structures, same field numbers.
+- **Lesson**: gRPC proto files must match **exactly** between client and server — package name, service name, message names, and field numbers all matter for routing and serialization.
+
+#### Proto structure differences between .NET and Java basket
+- **Cause**: The Java proto had extra fields (`buyer_id` in requests, `product_name`/`unit_price`/etc. in `BasketItem`). The .NET proto is much simpler — `GetBasketRequest` is empty, `BasketItem` only has `product_id` (field 2) and `quantity` (field 6).
+- **Why**: In .NET, the buyer identity comes from `context.GetUserIdentity()` which extracts the `sub` claim from the JWT in the gRPC metadata (headers). It's NOT passed in the request message.
+- **Fix**: Simplified the Java proto to match .NET exactly. Rewrote `BasketGrpcService` to extract buyer ID from JWT in gRPC headers.
+
+#### Extracting JWT identity in Java gRPC
+- **Cause**: .NET uses `ServerCallContext.GetHttpContext().User.FindFirst("sub")` to get the buyer ID. Java gRPC doesn't have built-in HTTP context integration.
+- **Fix**: Created `GrpcAuthInterceptor` (a `@GrpcGlobalServerInterceptor`) that captures gRPC `Metadata` (headers) and stores them in a `GrpcMetadataContext` (ThreadLocal). The service method then extracts the `authorization` header, decodes the JWT using Spring's `JwtDecoder`, and reads the `sub` claim.
+- **Files**: `GrpcAuthInterceptor.java`, `GrpcMetadataContext.java`, `BasketGrpcService.java`
+
 ### Established Patterns
 
 - **Raw Message listener**: All Java services consuming .NET events must use `@RabbitListener` with raw `Message` + `ObjectMapper.readValue()` (not typed parameters)
