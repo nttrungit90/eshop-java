@@ -145,7 +145,8 @@ services:
       - "9113:9113"
     environment:
       SPRING_DATA_REDIS_HOST: host.docker.internal
-      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PORT: 6380
+      SPRING_DATA_REDIS_PASSWORD: W7DjT4JQHfm1tMBqFZfYJu
       SPRING_RABBITMQ_ADDRESSES: host.docker.internal:5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
