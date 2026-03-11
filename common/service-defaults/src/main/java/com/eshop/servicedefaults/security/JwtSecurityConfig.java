@@ -28,6 +28,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.AntPathMatcher;
 
 @Configuration
@@ -53,7 +54,7 @@ public class JwtSecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(PUBLIC_PATHS).permitAll()
-                .requestMatchers(HttpMethod.GET, PUBLIC_GET_PATHS).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/catalog/**", HttpMethod.GET.name())).permitAll()
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll()
             )

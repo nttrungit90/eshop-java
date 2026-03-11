@@ -64,21 +64,17 @@ services:
     ports:
       - "9101:9101"
     environment:
-      SPRING_PROFILES_ACTIVE: dotnet
       SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/catalogdb
       SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_PASSWORD: 71UhdH_{f7C+yPyrh92RRW
       SPRING_RABBITMQ_ADDRESSES: host.docker.internal:5672
       SPRING_RABBITMQ_USERNAME: guest
-      SPRING_RABBITMQ_PASSWORD: guest
+      SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
+      IDENTITY_URL: http://host.docker.internal:5223
       SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-URL: http://host.docker.internal:9101
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
-      OTEL_SERVICE_NAME: catalog-service
     depends_on:
       spring-boot-admin:
-        condition: service_started
-      jaeger:
         condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9101/actuator/health"]
@@ -101,12 +97,8 @@ services:
       SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
       SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-URL: http://host.docker.internal:9106
-      MANAGEMENT_OTLP_TRACING_ENDPOINT: http://jaeger:4318/v1/traces
-      MANAGEMENT_OTLP_METRICS_EXPORT_URL: http://jaeger:4318/v1/metrics
     depends_on:
       spring-boot-admin:
-        condition: service_started
-      jaeger:
         condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9106/actuator/health"]
@@ -132,12 +124,8 @@ services:
       SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
       SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-URL: http://host.docker.internal:9105
-      MANAGEMENT_OTLP_TRACING_ENDPOINT: http://jaeger:4318/v1/traces
-      MANAGEMENT_OTLP_METRICS_EXPORT_URL: http://jaeger:4318/v1/metrics
     depends_on:
       spring-boot-admin:
-        condition: service_started
-      jaeger:
         condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9105/actuator/health"]
@@ -161,15 +149,11 @@ services:
       SPRING_RABBITMQ_ADDRESSES: host.docker.internal:5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
+      IDENTITY_URL: http://host.docker.internal:5223
       SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-URL: http://host.docker.internal:9104
-      MANAGEMENT_OTLP_TRACING_ENDPOINT: http://jaeger:4318/v1/traces
-      MANAGEMENT_OTLP_METRICS_EXPORT_URL: http://jaeger:4318/v1/metrics
-      IDENTITY_URL: http://host.docker.internal:9100
     depends_on:
       spring-boot-admin:
-        condition: service_started
-      jaeger:
         condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9104/actuator/health"]
