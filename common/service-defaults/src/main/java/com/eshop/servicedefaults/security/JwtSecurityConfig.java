@@ -23,6 +23,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
@@ -98,6 +100,13 @@ public class JwtSecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withJwkSetUri(identityUrl + "/.well-known/openid-configuration/jwks").build();
+        return NimbusJwtDecoder.withJwkSetUri(identityUrl + "/.well-known/openid-configuration/jwks")
+            .jwtProcessorCustomizer(processor -> {
+                // .NET Identity (Duende IdentityServer) issues access tokens with typ: at+jwt (RFC 9068).
+                // Spring's default NimbusJwtDecoder only allows typ: JWT. Accept both.
+                processor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(
+                    JOSEObjectType.JWT, new JOSEObjectType("at+jwt")));
+            })
+            .build();
     }
 }

@@ -46,6 +46,19 @@ Pinned in .NET AppHost so Java services can connect without Aspire service disco
 
 ### JWT / Authentication
 
+#### JWT `at+jwt` type rejected by Spring Security
+- **Cause**: .NET Identity (Duende IdentityServer) issues access tokens with JOSE header `typ: at+jwt` (per RFC 9068). Spring Security's default `NimbusJwtDecoder` only allows `typ: JWT` or no `typ` header, so it rejects all tokens with error: `JOSE header typ (type) at+jwt not allowed`.
+- **Fix**: Customize `NimbusJwtDecoder` to accept both types:
+  ```java
+  NimbusJwtDecoder.withJwkSetUri(jwksUri)
+      .jwtProcessorCustomizer(processor -> {
+          processor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(
+              JOSEObjectType.JWT, new JOSEObjectType("at+jwt")));
+      })
+      .build();
+  ```
+- **File**: `common/service-defaults/.../security/JwtSecurityConfig.java`
+
 #### 401 on catalog-service from .NET WebApp
 - **Cause**: `identity.url` pointed to `http://localhost:9100` (Java identity, not running) instead of .NET Identity at `http://localhost:5223`
 - **Fix**: Changed `identity.url` to `http://localhost:5223` in application.yml; in Docker, set `IDENTITY_URL=http://host.docker.internal:5223`
@@ -143,6 +156,13 @@ Pinned in .NET AppHost so Java services can connect without Aspire service disco
 - **Cause**: .NET uses `ServerCallContext.GetHttpContext().User.FindFirst("sub")` to get the buyer ID. Java gRPC doesn't have built-in HTTP context integration.
 - **Fix**: Created `GrpcAuthInterceptor` (a `@GrpcGlobalServerInterceptor`) that captures gRPC `Metadata` (headers) and stores them in a `GrpcMetadataContext` (ThreadLocal). The service method then extracts the `authorization` header, decodes the JWT using Spring's `JwtDecoder`, and reads the `sub` claim.
 - **Files**: `GrpcAuthInterceptor.java`, `GrpcMetadataContext.java`, `BasketGrpcService.java`
+
+#### gRPC "HTTP/2 handshake" failure — Aspire service discovery resolves to wrong port
+- **Cause**: .NET WebApp registers gRPC client with `http://basket-api`. Aspire service discovery resolves this using `services__basket-api__http__0` env var, which pointed to port 9103 (Spring MVC HTTP port). But Spring MVC doesn't support HTTP/2 — the gRPC Netty server runs on port 9113 separately.
+- **Why it works in .NET**: Kestrel natively serves both HTTP/1.1 and HTTP/2 (including gRPC) on the same port. There's no separate gRPC port — gRPC traffic goes over the regular HTTP endpoint.
+- **Why it fails with Java**: `grpc-server-spring-boot-starter` runs a separate Netty server for gRPC on its own port (9113). Spring MVC on port 9103 is HTTP/1.1 only.
+- **Fix**: Change `services__basket-api__http__0` to `http://localhost:9113` (the gRPC port) since WebApp only talks to basket via gRPC, not REST. Identity API uses `BasketApiClient` env var directly (not service discovery) so it still points to port 9103 for HTTP.
+- **Lesson**: When replacing a .NET service with Java, remember that Kestrel multiplexes HTTP/1.1 + HTTP/2 + gRPC on one port, while Spring Boot + grpc-server-spring-boot-starter uses separate ports. Aspire service discovery env vars must point to the port that matches the protocol the client expects.
 
 ### Established Patterns
 
