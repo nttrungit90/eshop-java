@@ -53,9 +53,9 @@ catalog:
   ai:
     enabled: false
 
-# Security - Identity Service (.NET Identity API HTTP endpoint)
+# Security - Keycloak OIDC
 identity:
-  url: http://localhost:5223
+  url: http://localhost:8180/realms/eshop
 
 management:
   endpoints:

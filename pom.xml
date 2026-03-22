@@ -27,7 +27,6 @@
         <module>common/integration-event-log</module>
 
         <!-- Microservices -->
-        <module>services/identity-service</module>
         <module>services/catalog-service</module>
         <module>services/basket-service</module>
         <module>services/ordering</module>
@@ -46,9 +45,6 @@
         <!-- Spring Boot -->
         <spring-boot.version>3.4.1</spring-boot.version>
         <spring-cloud.version>2024.0.0</spring-cloud.version>
-
-        <!-- Spring Security OAuth2 Authorization Server -->
-        <spring-authorization-server.version>1.4.0</spring-authorization-server.version>
 
         <!-- Database -->
         <postgresql.version>42.7.4</postgresql.version>

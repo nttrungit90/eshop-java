@@ -36,9 +36,9 @@ spring:
 server:
   port: 9102
 
-# Security - Identity Service
+# Security - Keycloak OIDC
 identity:
-  url: http://localhost:9100
+  url: http://localhost:8180/realms/eshop
 
 management:
   endpoints:

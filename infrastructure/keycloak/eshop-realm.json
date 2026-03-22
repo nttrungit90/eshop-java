@@ -1,0 +1,489 @@
+{
+  "realm": "eshop",
+  "enabled": true,
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "sslRequired": "none",
+  "accessTokenLifespan": 7200,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "roles": {
+    "realm": [
+      {
+        "name": "user",
+        "description": "Regular user role"
+      }
+    ]
+  },
+  "clientScopes": [
+    {
+      "name": "openid",
+      "description": "OpenID Connect scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "sub",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-sub-mapper",
+          "consentRequired": false,
+          "config": {
+            "introspection.token.claim": "true",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "profile",
+      "description": "OpenID Connect built-in scope: profile",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "username",
+            "claim.name": "preferred_username",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "full name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-full-name-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "orders",
+      "description": "Access to Ordering API",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "Access your orders"
+      }
+    },
+    {
+      "name": "basket",
+      "description": "Access to Basket API",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "Access your shopping basket"
+      }
+    },
+    {
+      "name": "webhooks",
+      "description": "Access to Webhooks API",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "Manage your webhooks"
+      }
+    },
+    {
+      "name": "eshop-custom-claims",
+      "description": "Custom eShop user attributes mapped to JWT claims",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "firstName",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "name",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "last_name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "lastName",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "last_name",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "card_number",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "false",
+            "user.attribute": "cardNumber",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "card_number",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "card_holder",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "false",
+            "user.attribute": "cardHolderName",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "card_holder",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "card_security_number",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "false",
+            "user.attribute": "securityNumber",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "card_security_number",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "card_expiration",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "false",
+            "user.attribute": "expiration",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "card_expiration",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "address_street",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "false",
+            "user.attribute": "street",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "address_street",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "address_city",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "false",
+            "user.attribute": "city",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "address_city",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "address_state",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "false",
+            "user.attribute": "state",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "address_state",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "address_country",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "false",
+            "user.attribute": "country",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "address_country",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "address_zip_code",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "false",
+            "user.attribute": "zipCode",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "address_zip_code",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ],
+  "defaultDefaultClientScopes": [
+    "openid",
+    "profile",
+    "eshop-custom-claims"
+  ],
+  "clients": [
+    {
+      "clientId": "webapp",
+      "name": "eShop Web Application (.NET Blazor - confidential)",
+      "description": "Used by .NET Blazor WebApp (server-side, can hold secrets safely)",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "secret",
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "https://localhost:7298/signin-oidc",
+        "http://localhost:5045/signin-oidc",
+        "https://localhost:*/signin-oidc",
+        "http://localhost:*/signin-oidc"
+      ],
+      "webOrigins": [
+        "+"
+      ],
+      "defaultClientScopes": [
+        "openid",
+        "profile",
+        "eshop-custom-claims",
+        "orders",
+        "basket"
+      ],
+      "optionalClientScopes": [],
+      "attributes": {
+        "post.logout.redirect.uris": "+"
+      }
+    },
+    {
+      "clientId": "webapp-spa",
+      "name": "eShop Web Application (React SPA - public/PKCE)",
+      "description": "Used by React SPA frontend (browser-based, no secret, uses PKCE)",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:8080/authentication/login-callback",
+        "http://localhost:8080/signin-oidc"
+      ],
+      "webOrigins": [
+        "http://localhost:8080"
+      ],
+      "defaultClientScopes": [
+        "openid",
+        "profile",
+        "eshop-custom-claims",
+        "orders",
+        "basket"
+      ],
+      "optionalClientScopes": [],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:8080/signout-callback-oidc##http://localhost:8080/"
+      }
+    },
+    {
+      "clientId": "webhooksclient",
+      "name": "eShop Webhooks Client (.NET - confidential)",
+      "description": "Used by .NET WebhookClient app",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "secret",
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "https://localhost:*/signin-oidc",
+        "http://localhost:*/signin-oidc"
+      ],
+      "webOrigins": [
+        "+"
+      ],
+      "defaultClientScopes": [
+        "openid",
+        "profile",
+        "eshop-custom-claims",
+        "webhooks"
+      ],
+      "optionalClientScopes": [],
+      "attributes": {
+        "post.logout.redirect.uris": "+"
+      }
+    },
+    {
+      "clientId": "mobilebff",
+      "name": "eShop Mobile BFF",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "mobilebff-secret",
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:11000/signin-oidc"
+      ],
+      "webOrigins": [
+        "http://localhost:11000"
+      ],
+      "defaultClientScopes": [
+        "openid",
+        "profile",
+        "eshop-custom-claims",
+        "orders",
+        "basket"
+      ],
+      "optionalClientScopes": []
+    },
+    {
+      "clientId": "basket",
+      "name": "Basket Service (Service-to-Service)",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "basket-secret",
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "defaultClientScopes": [
+        "basket"
+      ],
+      "optionalClientScopes": []
+    },
+    {
+      "clientId": "orders",
+      "name": "Orders Service (Service-to-Service)",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "orders-secret",
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "defaultClientScopes": [
+        "orders"
+      ],
+      "optionalClientScopes": []
+    }
+  ],
+  "users": [
+    {
+      "username": "alice",
+      "enabled": true,
+      "email": "AliceSmith@email.com",
+      "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "Smith",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Pass123$",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "user"
+      ],
+      "attributes": {
+        "cardNumber": ["4012888888881881"],
+        "securityNumber": ["123"],
+        "expiration": ["12/25"],
+        "cardHolderName": ["Alice Smith"],
+        "cardType": ["1"],
+        "street": ["15703 NE 61st Ct"],
+        "city": ["Redmond"],
+        "state": ["WA"],
+        "country": ["U.S."],
+        "zipCode": ["98052"]
+      }
+    },
+    {
+      "username": "bob",
+      "enabled": true,
+      "email": "BobSmith@email.com",
+      "emailVerified": true,
+      "firstName": "Bob",
+      "lastName": "Smith",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Pass123$",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "user"
+      ],
+      "attributes": {
+        "cardNumber": ["4012888888881881"],
+        "securityNumber": ["456"],
+        "expiration": ["12/25"],
+        "cardHolderName": ["Bob Smith"],
+        "cardType": ["1"],
+        "street": ["One Microsoft Way"],
+        "city": ["Redmond"],
+        "state": ["WA"],
+        "country": ["U.S."],
+        "zipCode": ["98052"]
+      }
+    }
+  ]
+}

@@ -4,9 +4,10 @@
  *
  * JWT security configuration for resource servers.
  *
- * During migration, Java services validate JWTs issued by .NET Identity (Duende IdentityServer).
- * The identity.url must point to the .NET Identity HTTP endpoint (e.g., http://localhost:5223)
- * so that the JWKS endpoint is reachable for token signature verification.
+ * All Java services validate JWTs issued by Keycloak.
+ * The identity.url must point to the Keycloak realm issuer URI
+ * (e.g., http://localhost:8180/realms/eshop) so that the OIDC discovery
+ * endpoint is reachable for automatic JWKS URI resolution.
  *
  * Note: Spring Security's BearerTokenAuthenticationFilter runs before authorization checks,
  * so if a Bearer token is present and validation fails, it returns 401 even on permitAll endpoints.
@@ -27,6 +28,7 @@ import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
@@ -62,7 +64,10 @@ public class JwtSecurityConfig {
             )
             .oauth2ResourceServer(oauth2 -> oauth2
                 .bearerTokenResolver(selectiveBearerTokenResolver())
-                .jwt(jwt -> jwt.decoder(jwtDecoder()))
+                .jwt(jwt -> jwt
+                    .decoder(jwtDecoder())
+                    .jwtAuthenticationConverter(jwtAuthenticationConverter())
+                )
             );
 
         return http.build();
@@ -98,15 +103,39 @@ public class JwtSecurityConfig {
         };
     }
 
+    /**
+     * JWT decoder using explicit JWKS URI derived from identity.url.
+     *
+     * We build the JWKS URI directly ({identity.url}/protocol/openid-connect/certs)
+     * instead of using OIDC discovery because Keycloak's discovery document returns
+     * jwks_uri with KC_HOSTNAME (e.g., http://localhost:8180/...), which is unreachable
+     * from Docker containers that access Keycloak via host.docker.internal.
+     */
     @Bean
     public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withJwkSetUri(identityUrl + "/.well-known/openid-configuration/jwks")
-            .jwtProcessorCustomizer(processor -> {
-                // .NET Identity (Duende IdentityServer) issues access tokens with typ: at+jwt (RFC 9068).
-                // Spring's default NimbusJwtDecoder only allows typ: JWT. Accept both.
-                processor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(
-                    JOSEObjectType.JWT, new JOSEObjectType("at+jwt")));
-            })
-            .build();
+        String jwksUri = identityUrl + "/protocol/openid-connect/certs";
+        return NimbusJwtDecoder.withJwkSetUri(jwksUri)
+                .jwtProcessorCustomizer(processor -> {
+                    // Accept "JWT", "at+jwt" (.NET IdentityServer), and "Bearer" (Keycloak access tokens)
+                    processor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(
+                            JOSEObjectType.JWT, new JOSEObjectType("at+jwt"), new JOSEObjectType("Bearer")));
+                })
+                .build();
+    }
+
+    /**
+     * Configure JWT authentication to use preferred_username as the principal name.
+     *
+     * Keycloak's 'sub' claim is a UUID (e.g., "f47ac10b-58cc-4372-..."), not the username.
+     * Services use principal.getName() to identify users (e.g., as Redis key in Basket,
+     * as buyerId in Ordering). By mapping preferred_username as the principal claim,
+     * principal.getName() returns "alice" instead of a UUID, maintaining compatibility
+     * with existing service logic.
+     */
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setPrincipalClaimName("preferred_username");
+        return converter;
     }
 }

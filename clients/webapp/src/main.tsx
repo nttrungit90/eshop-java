@@ -11,8 +11,8 @@ import App from './App'
 import './index.css'
 
 const oidcConfig = {
-  authority: import.meta.env.VITE_IDENTITY_URL || 'http://localhost:9100',
-  client_id: 'webapp',
+  authority: import.meta.env.VITE_IDENTITY_URL || 'http://localhost:8180/realms/eshop',
+  client_id: 'webapp-spa',
   redirect_uri: window.location.origin + '/authentication/login-callback',
   post_logout_redirect_uri: window.location.origin + '/signout-callback-oidc',
   scope: 'openid profile orders basket',
