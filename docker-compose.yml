@@ -98,8 +98,11 @@ services:
       IDENTITY_URL: http://host.docker.internal:8180/realms/eshop
       SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-URL: http://host.docker.internal:9101
+      MANAGEMENT_OTLP_TRACING_ENDPOINT: http://jaeger:4318/v1/traces
     depends_on:
       spring-boot-admin:
+        condition: service_started
+      jaeger:
         condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9101/actuator/health"]
@@ -122,8 +125,11 @@ services:
       SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
       SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-URL: http://host.docker.internal:9106
+      MANAGEMENT_OTLP_TRACING_ENDPOINT: http://jaeger:4318/v1/traces
     depends_on:
       spring-boot-admin:
+        condition: service_started
+      jaeger:
         condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9106/actuator/health"]
@@ -149,8 +155,11 @@ services:
       SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
       SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-URL: http://host.docker.internal:9105
+      MANAGEMENT_OTLP_TRACING_ENDPOINT: http://jaeger:4318/v1/traces
     depends_on:
       spring-boot-admin:
+        condition: service_started
+      jaeger:
         condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9105/actuator/health"]
@@ -178,8 +187,11 @@ services:
       IDENTITY_URL: http://host.docker.internal:8180/realms/eshop
       SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-URL: http://host.docker.internal:9103
+      MANAGEMENT_OTLP_TRACING_ENDPOINT: http://jaeger:4318/v1/traces
     depends_on:
       spring-boot-admin:
+        condition: service_started
+      jaeger:
         condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9103/actuator/health"]
@@ -206,8 +218,11 @@ services:
       IDENTITY_URL: http://host.docker.internal:8180/realms/eshop
       SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-URL: http://host.docker.internal:9104
+      MANAGEMENT_OTLP_TRACING_ENDPOINT: http://jaeger:4318/v1/traces
     depends_on:
       spring-boot-admin:
+        condition: service_started
+      jaeger:
         condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9104/actuator/health"]

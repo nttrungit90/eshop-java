@@ -164,6 +164,27 @@ Pinned in .NET AppHost so Java services can connect without Aspire service disco
 - **Fix**: Change `services__basket-api__http__0` to `http://localhost:9113` (the gRPC port) since WebApp only talks to basket via gRPC, not REST. Identity API uses `BasketApiClient` env var directly (not service discovery) so it still points to port 9103 for HTTP.
 - **Lesson**: When replacing a .NET service with Java, remember that Kestrel multiplexes HTTP/1.1 + HTTP/2 + gRPC on one port, while Spring Boot + grpc-server-spring-boot-starter uses separate ports. Aspire service discovery env vars must point to the port that matches the protocol the client expects.
 
+### Keycloak / Checkout Claims
+
+#### Checkout address and card fields empty in .NET WebApp
+- **Cause**: Three issues combined:
+  1. Keycloak protocol mappers for custom claims (`address_street`, `address_city`, `address_state`, `address_country`, `address_zip_code`, `card_number`, `card_holder`, `card_security_number`, `card_expiration`) had `id.token.claim: false` and `userinfo.token.claim: false` — claims were only in the access token
+  2. The .NET WebApp reads claims from `HttpContext.User.Claims`, which is populated from the **ID token** and **userinfo endpoint** (via `GetClaimsFromUserInfoEndpoint = true`), not the access token
+  3. ASP.NET Core's OIDC middleware filters out non-standard claims by default — even if Keycloak returns them, they're silently dropped unless explicitly mapped via `ClaimActions`
+- **Fix** (two parts):
+  1. **Keycloak realm JSON** (`infrastructure/keycloak/eshop-realm.json`): Set `id.token.claim: true` and `userinfo.token.claim: true` for all custom claim mappers in the `eshop-custom-claims` scope
+  2. **.NET WebApp** (`src/WebApp/Extensions/Extensions.cs`): Added `options.ClaimActions.MapUniqueJsonKey(...)` for each custom claim in the OIDC config so ASP.NET Core preserves them
+- **After fix**: Recreate Keycloak container (`docker compose down keycloak && docker compose up -d keycloak`) and restart .NET AppHost. User must log out and log back in to get a fresh token.
+- **Why it worked before Keycloak**: .NET Identity.API (Duende IdentityServer) has a custom `ProfileService` that injects claims server-side within the same trust boundary — they don't flow through ASP.NET's OIDC middleware, so there's no filtering. With Keycloak as an **external** OIDC provider, claims go through the OIDC middleware which (a) only reads from ID token/userinfo (not access token), and (b) silently drops non-standard claim names unless explicitly mapped via `ClaimActions`. Both issues had to be fixed.
+- **Lesson**: When replacing .NET Identity (Duende) with Keycloak, ensure custom claims are enabled in **all three token types** (access, ID, userinfo) and that the .NET OIDC middleware is configured to map them explicitly
+
+### PostgreSQL Data Persistence
+
+#### CatalogDb data lost after Docker stop
+- **Cause**: The PostgreSQL container managed by .NET Aspire had no data volume — data lived only inside the container and was lost on stop/remove
+- **Fix**: Added `.WithDataVolume("eshop-postgres-data")` to the postgres resource in `src/eShop.AppHost/Program.cs`
+- **Note**: This persists all databases (catalogdb, orderingdb, webhooksdb) across container restarts
+
 ### Established Patterns
 
 - **Raw Message listener**: All Java services consuming .NET events must use `@RabbitListener` with raw `Message` + `ObjectMapper.readValue()` (not typed parameters)

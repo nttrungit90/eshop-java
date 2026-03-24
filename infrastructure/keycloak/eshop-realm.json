@@ -148,9 +148,9 @@
           "protocolMapper": "oidc-usermodel-attribute-mapper",
           "consentRequired": false,
           "config": {
-            "userinfo.token.claim": "false",
+            "userinfo.token.claim": "true",
             "user.attribute": "cardNumber",
-            "id.token.claim": "false",
+            "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "card_number",
             "jsonType.label": "String"
@@ -162,9 +162,9 @@
           "protocolMapper": "oidc-usermodel-attribute-mapper",
           "consentRequired": false,
           "config": {
-            "userinfo.token.claim": "false",
+            "userinfo.token.claim": "true",
             "user.attribute": "cardHolderName",
-            "id.token.claim": "false",
+            "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "card_holder",
             "jsonType.label": "String"
@@ -176,9 +176,9 @@
           "protocolMapper": "oidc-usermodel-attribute-mapper",
           "consentRequired": false,
           "config": {
-            "userinfo.token.claim": "false",
+            "userinfo.token.claim": "true",
             "user.attribute": "securityNumber",
-            "id.token.claim": "false",
+            "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "card_security_number",
             "jsonType.label": "String"
@@ -190,9 +190,9 @@
           "protocolMapper": "oidc-usermodel-attribute-mapper",
           "consentRequired": false,
           "config": {
-            "userinfo.token.claim": "false",
+            "userinfo.token.claim": "true",
             "user.attribute": "expiration",
-            "id.token.claim": "false",
+            "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "card_expiration",
             "jsonType.label": "String"
@@ -204,9 +204,9 @@
           "protocolMapper": "oidc-usermodel-attribute-mapper",
           "consentRequired": false,
           "config": {
-            "userinfo.token.claim": "false",
+            "userinfo.token.claim": "true",
             "user.attribute": "street",
-            "id.token.claim": "false",
+            "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "address_street",
             "jsonType.label": "String"
@@ -218,9 +218,9 @@
           "protocolMapper": "oidc-usermodel-attribute-mapper",
           "consentRequired": false,
           "config": {
-            "userinfo.token.claim": "false",
+            "userinfo.token.claim": "true",
             "user.attribute": "city",
-            "id.token.claim": "false",
+            "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "address_city",
             "jsonType.label": "String"
@@ -232,9 +232,9 @@
           "protocolMapper": "oidc-usermodel-attribute-mapper",
           "consentRequired": false,
           "config": {
-            "userinfo.token.claim": "false",
+            "userinfo.token.claim": "true",
             "user.attribute": "state",
-            "id.token.claim": "false",
+            "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "address_state",
             "jsonType.label": "String"
@@ -246,9 +246,9 @@
           "protocolMapper": "oidc-usermodel-attribute-mapper",
           "consentRequired": false,
           "config": {
-            "userinfo.token.claim": "false",
+            "userinfo.token.claim": "true",
             "user.attribute": "country",
-            "id.token.claim": "false",
+            "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "address_country",
             "jsonType.label": "String"
@@ -260,9 +260,9 @@
           "protocolMapper": "oidc-usermodel-attribute-mapper",
           "consentRequired": false,
           "config": {
-            "userinfo.token.claim": "false",
+            "userinfo.token.claim": "true",
             "user.attribute": "zipCode",
-            "id.token.claim": "false",
+            "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "address_zip_code",
             "jsonType.label": "String"
@@ -306,7 +306,7 @@
       ],
       "optionalClientScopes": [],
       "attributes": {
-        "post.logout.redirect.uris": "+"
+        "post.logout.redirect.uris": "https://localhost:7298/signout-callback-oidc##http://localhost:5045/signout-callback-oidc"
       }
     },
     {

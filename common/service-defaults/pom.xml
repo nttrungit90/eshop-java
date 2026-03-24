@@ -60,6 +60,16 @@
             <version>3.4.1</version>
         </dependency>
 
+        <!-- Distributed Tracing (OTLP → Jaeger) -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp</artifactId>
+        </dependency>
+
         <!-- SpringDoc OpenAPI -->
         <dependency>
             <groupId>org.springdoc</groupId>

@@ -32,11 +32,8 @@ management:
     health:
       show-details: always
   otlp:
-    metrics:
-      export:
-        enabled: false
     tracing:
-      endpoint: ""
+      endpoint: http://localhost:4318/v1/traces
 
 logging:
   level:
