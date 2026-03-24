@@ -351,7 +351,7 @@
       "implicitFlowEnabled": false,
       "serviceAccountsEnabled": false,
       "redirectUris": [
-        "https://localhost:*/signin-oidc",
+        "https://localhost:7260/signin-oidc",
         "http://localhost:*/signin-oidc"
       ],
       "webOrigins": [
@@ -365,7 +365,7 @@
       ],
       "optionalClientScopes": [],
       "attributes": {
-        "post.logout.redirect.uris": "+"
+        "post.logout.redirect.uris": "https://localhost:7260/signout-callback-oidc##http://localhost:*/signout-callback-oidc"
       }
     },
     {
