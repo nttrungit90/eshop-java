@@ -96,6 +96,7 @@ services:
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
       IDENTITY_URL: http://host.docker.internal:8180/realms/eshop
+      IDENTITY_JWK_SET_URI: http://host.docker.internal:8180/realms/eshop/protocol/openid-connect/certs
       SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-URL: http://host.docker.internal:9101
       MANAGEMENT_OTLP_TRACING_ENDPOINT: http://jaeger:4318/v1/traces
@@ -185,6 +186,7 @@ services:
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
       IDENTITY_URL: http://host.docker.internal:8180/realms/eshop
+      IDENTITY_JWK_SET_URI: http://host.docker.internal:8180/realms/eshop/protocol/openid-connect/certs
       SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-URL: http://host.docker.internal:9103
       MANAGEMENT_OTLP_TRACING_ENDPOINT: http://jaeger:4318/v1/traces
@@ -216,6 +218,8 @@ services:
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
       IDENTITY_URL: http://host.docker.internal:8180/realms/eshop
+      IDENTITY_JWK_SET_URI: http://host.docker.internal:8180/realms/eshop/protocol/openid-connect/certs
+      WEBHOOKS_GRANT_URL_VALIDATION: "false"
       SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-URL: http://host.docker.internal:9104
       MANAGEMENT_OTLP_TRACING_ENDPOINT: http://jaeger:4318/v1/traces
@@ -226,6 +230,34 @@ services:
         condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9104/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - eshop-network
+
+  webhooks-client:
+    build:
+      context: ./clients/webhooks-client
+      dockerfile: Dockerfile
+    container_name: eshop-webhooks-client
+    ports:
+      - "9107:9107"
+    environment:
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_AUTHORIZATION_URI: http://localhost:8180/realms/eshop/protocol/openid-connect/auth
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_TOKEN_URI: http://host.docker.internal:8180/realms/eshop/protocol/openid-connect/token
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_USER_INFO_URI: http://host.docker.internal:8180/realms/eshop/protocol/openid-connect/userinfo
+      SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_JWK_SET_URI: http://host.docker.internal:8180/realms/eshop/protocol/openid-connect/certs
+      WEBHOOKS_API_URL: http://webhooks-service:9104
+      WEBHOOKS_SELF_URL: http://webhooks-client:9107
+      WEBHOOKS_TOKEN: "6168DB8D-DC58-4094-AF24-483278923590"
+    depends_on:
+      webhooks-service:
+        condition: service_started
+      keycloak:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9107/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 5

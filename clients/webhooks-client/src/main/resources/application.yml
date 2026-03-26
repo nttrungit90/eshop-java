@@ -1,0 +1,46 @@
+# Webhooks Client configuration
+
+server:
+  port: 9107
+  max-http-request-header-size: 48KB
+
+spring:
+  application:
+    name: webhooks-client
+
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: webhooksclient
+            client-secret: secret
+            scope: openid,webhooks
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          keycloak:
+            authorization-uri: http://localhost:8180/realms/eshop/protocol/openid-connect/auth
+            token-uri: http://localhost:8180/realms/eshop/protocol/openid-connect/token
+            user-info-uri: http://localhost:8180/realms/eshop/protocol/openid-connect/userinfo
+            jwk-set-uri: http://localhost:8180/realms/eshop/protocol/openid-connect/certs
+            user-name-attribute: preferred_username
+
+webhooks:
+  api-url: http://localhost:9104
+  token: "6168DB8D-DC58-4094-AF24-483278923590"
+  self-url: http://localhost:9107
+  validate-token: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.eshop: DEBUG

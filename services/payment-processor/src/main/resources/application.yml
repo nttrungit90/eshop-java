@@ -19,6 +19,7 @@ spring:
 
 server:
   port: 9106
+  max-http-request-header-size: 48KB
 
 payment:
   payment-succeeded: true

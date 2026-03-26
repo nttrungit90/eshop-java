@@ -45,6 +45,7 @@ spring:
 
 server:
   port: 9101
+  max-http-request-header-size: 48KB
 
 # Catalog-specific configuration
 catalog:
@@ -56,6 +57,7 @@ catalog:
 # Security - Keycloak OIDC
 identity:
   url: http://localhost:8180/realms/eshop
+  jwk-set-uri: http://localhost:8180/realms/eshop/protocol/openid-connect/certs
 
 management:
   endpoints:

@@ -34,6 +34,7 @@ spring:
 server:
   port: 9105
   address: 0.0.0.0
+  max-http-request-header-size: 48KB
 
 background-task:
   grace-period-time: 1

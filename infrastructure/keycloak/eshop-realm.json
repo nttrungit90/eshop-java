@@ -341,8 +341,8 @@
     },
     {
       "clientId": "webhooksclient",
-      "name": "eShop Webhooks Client (.NET - confidential)",
-      "description": "Used by .NET WebhookClient app",
+      "name": "eShop Webhooks Client (confidential)",
+      "description": "Used by Webhooks Client app",
       "enabled": true,
       "publicClient": false,
       "secret": "secret",
@@ -352,7 +352,8 @@
       "serviceAccountsEnabled": false,
       "redirectUris": [
         "https://localhost:7260/signin-oidc",
-        "http://localhost:*/signin-oidc"
+        "http://localhost:*/signin-oidc",
+        "http://localhost:9107/*"
       ],
       "webOrigins": [
         "+"
@@ -365,7 +366,7 @@
       ],
       "optionalClientScopes": [],
       "attributes": {
-        "post.logout.redirect.uris": "https://localhost:7260/signout-callback-oidc##http://localhost:*/signout-callback-oidc"
+        "post.logout.redirect.uris": "https://localhost:7260/signout-callback-oidc##http://localhost:*/signout-callback-oidc##http://localhost:9107/*"
       }
     },
     {

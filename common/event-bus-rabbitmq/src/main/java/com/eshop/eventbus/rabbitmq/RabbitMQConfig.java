@@ -66,9 +66,39 @@ public class RabbitMQConfig {
         return new Declarables(bindings);
     }
 
+    /**
+     * ObjectMapper for RabbitMQ message serialization only.
+     * Uses PascalCase to match .NET event bus JSON format.
+     * Exposed as a named bean so event listeners can inject it via @Qualifier.
+     * NOT marked @Primary so Spring MVC keeps using its default camelCase ObjectMapper.
+     */
+    @Bean("eventBusObjectMapper")
+    public ObjectMapper eventBusObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        return mapper;
+    }
+
+    /**
+     * Ensure Spring Boot's default ObjectMapper is available for Spring MVC.
+     * Without this, JacksonAutoConfiguration skips creating one because eventBusObjectMapper exists.
+     */
     @Bean
-    public MessageConverter jsonMessageConverter(ObjectMapper objectMapper) {
-        return new Jackson2JsonMessageConverter(objectMapper);
+    @org.springframework.context.annotation.Primary
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        return mapper;
+    }
+
+    @Bean
+    public MessageConverter jsonMessageConverter() {
+        return new Jackson2JsonMessageConverter(eventBusObjectMapper());
     }
 
     @Bean
@@ -77,17 +107,5 @@ public class RabbitMQConfig {
         template.setMessageConverter(messageConverter);
         template.setExchange(EXCHANGE_NAME);
         return template;
-    }
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        // Match .NET JSON serialization: PascalCase property names and ISO date format
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        // .NET events may have extra fields the Java class doesn't need
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        return mapper;
     }
 }

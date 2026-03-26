@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,7 +20,7 @@ public class OrderStatusChangedToStockConfirmedIntegrationEventHandler {
     private final PaymentOptions paymentOptions;
     private final ObjectMapper objectMapper;
 
-    public OrderStatusChangedToStockConfirmedIntegrationEventHandler(EventBus eventBus, PaymentOptions paymentOptions, ObjectMapper objectMapper) {
+    public OrderStatusChangedToStockConfirmedIntegrationEventHandler(EventBus eventBus, PaymentOptions paymentOptions, @Qualifier("eventBusObjectMapper") ObjectMapper objectMapper) {
         this.eventBus = eventBus;
         this.paymentOptions = paymentOptions;
         this.objectMapper = objectMapper;

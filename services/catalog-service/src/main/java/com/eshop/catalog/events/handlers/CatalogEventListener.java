@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
@@ -23,7 +24,7 @@ public class CatalogEventListener {
     private final OrderStatusChangedToPaidIntegrationEventHandler paidHandler;
 
     public CatalogEventListener(
-            ObjectMapper objectMapper,
+            @Qualifier("eventBusObjectMapper") ObjectMapper objectMapper,
             OrderStatusChangedToAwaitingValidationIntegrationEventHandler awaitingValidationHandler,
             OrderStatusChangedToPaidIntegrationEventHandler paidHandler) {
         this.objectMapper = objectMapper;

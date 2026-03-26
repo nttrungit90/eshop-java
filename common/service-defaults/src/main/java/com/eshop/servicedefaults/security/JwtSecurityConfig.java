@@ -25,7 +25,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
 import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
+import com.nimbusds.jose.proc.JWSVerificationKeySelector;
+import com.nimbusds.jose.proc.SecurityContext;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -42,6 +47,9 @@ public class JwtSecurityConfig {
 
     @Value("${identity.url}")
     private String identityUrl;
+
+    @Value("${identity.jwk-set-uri:#{null}}")
+    private String jwkSetUri;
 
     private static final String[] PUBLIC_PATHS = {
         "/actuator/**", "/swagger-ui/**", "/v3/api-docs/**"
@@ -104,23 +112,43 @@ public class JwtSecurityConfig {
     }
 
     /**
-     * JWT decoder using explicit JWKS URI derived from identity.url.
+     * JWT decoder using explicit JWKS URI.
      *
-     * We build the JWKS URI directly ({identity.url}/protocol/openid-connect/certs)
-     * instead of using OIDC discovery because Keycloak's discovery document returns
-     * jwks_uri with KC_HOSTNAME (e.g., http://localhost:8180/...), which is unreachable
-     * from Docker containers that access Keycloak via host.docker.internal.
+     * Uses identity.jwk-set-uri if provided, otherwise derives from identity.url.
+     * We build the JWKS URI directly instead of using OIDC discovery because
+     * Keycloak's discovery document returns jwks_uri with KC_HOSTNAME
+     * (e.g., http://localhost:8180/...), which is unreachable from Docker
+     * containers that access Keycloak via host.docker.internal.
+     *
+     * We also build the JWKSource manually to prevent Nimbus from adding
+     * an OIDC discovery fallback that constructs invalid URLs like
+     * {issuer}/.well-known/openid-configuration/jwks.
      */
     @Bean
     public JwtDecoder jwtDecoder() {
-        String jwksUri = identityUrl + "/protocol/openid-connect/certs";
-        return NimbusJwtDecoder.withJwkSetUri(jwksUri)
-                .jwtProcessorCustomizer(processor -> {
-                    // Accept "JWT", "at+jwt" (.NET IdentityServer), and "Bearer" (Keycloak access tokens)
-                    processor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(
-                            JOSEObjectType.JWT, new JOSEObjectType("at+jwt"), new JOSEObjectType("Bearer")));
-                })
+        String resolvedJwksUri = (jwkSetUri != null) ? jwkSetUri : identityUrl + "/protocol/openid-connect/certs";
+
+        // Build JWKSource manually to disable Nimbus OIDC discovery fallback.
+        // The default JWKSourceBuilder adds a fallback that constructs invalid URLs
+        // like {issuer}/.well-known/openid-configuration/jwks
+        java.net.URL jwksUrl;
+        try {
+            jwksUrl = new java.net.URL(resolvedJwksUri);
+        } catch (java.net.MalformedURLException e) {
+            throw new IllegalArgumentException("Invalid JWKS URI: " + resolvedJwksUri, e);
+        }
+        var jwkSource = JWKSourceBuilder
+                .create(jwksUrl)
+                .retrying(true)
                 .build();
+
+        var jwtProcessor = new DefaultJWTProcessor<SecurityContext>();
+        jwtProcessor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(
+                JOSEObjectType.JWT, new JOSEObjectType("at+jwt"), new JOSEObjectType("Bearer")));
+        jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(
+                JWSAlgorithm.RS256, jwkSource));
+
+        return new NimbusJwtDecoder(jwtProcessor);
     }
 
     /**

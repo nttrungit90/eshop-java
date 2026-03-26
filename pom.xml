@@ -33,6 +33,9 @@
         <module>services/order-processor</module>
         <module>services/payment-processor</module>
         <module>services/webhooks-service</module>
+
+        <!-- Clients -->
+        <module>clients/webhooks-client</module>
     </modules>
 
     <properties>
