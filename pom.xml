@@ -36,6 +36,9 @@
 
         <!-- Clients -->
         <module>clients/webhooks-client</module>
+
+        <!-- Gateways -->
+        <module>services/mobile-bff</module>
     </modules>
 
     <properties>

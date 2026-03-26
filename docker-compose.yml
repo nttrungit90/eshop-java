@@ -264,6 +264,42 @@ services:
     networks:
       - eshop-network
 
+  mobile-bff:
+    build:
+      context: ./services/mobile-bff
+      dockerfile: Dockerfile
+    container_name: eshop-mobile-bff
+    ports:
+      - "11632:11632"
+    environment:
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES_0_ID: catalog
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES_0_URI: http://catalog-service:9101
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES_0_PREDICATES_0: Path=/catalog-api/**
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES_0_FILTERS_0: StripPrefix=1
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES_1_ID: catalog-direct
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES_1_URI: http://catalog-service:9101
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES_1_PREDICATES_0: Path=/api/catalog/**
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES_2_ID: ordering
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES_2_URI: http://host.docker.internal:9102
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES_2_PREDICATES_0: Path=/api/orders/**
+      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
+      SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-URL: http://host.docker.internal:11632
+      MANAGEMENT_OTLP_TRACING_ENDPOINT: http://jaeger:4318/v1/traces
+    depends_on:
+      catalog-service:
+        condition: service_healthy
+      spring-boot-admin:
+        condition: service_started
+      jaeger:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11632/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - eshop-network
+
 networks:
   eshop-network:
     driver: bridge

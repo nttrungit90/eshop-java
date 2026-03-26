@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: mobile-bff
+  cloud:
+    gateway:
+      mvc:
+        routes:
+          # Catalog routes - strip /catalog-api prefix
+          # /catalog-api/api/catalog/items -> /api/catalog/items on catalog-service
+          - id: catalog
+            uri: http://localhost:9101
+            predicates:
+              - Path=/catalog-api/**
+            filters:
+              - StripPrefix=1
+
+          # Catalog catch-all (direct /api/catalog paths)
+          - id: catalog-direct
+            uri: http://localhost:9101
+            predicates:
+              - Path=/api/catalog/**
+
+          # Ordering routes
+          - id: ordering
+            uri: http://localhost:9102
+            predicates:
+              - Path=/api/orders/**
+
+server:
+  port: 11632
+  max-http-request-header-size: 48KB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+
+spring.boot.admin.client:
+  url: http://localhost:9090
+  instance:
+    service-url: http://localhost:11632
+
+logging:
+  level:
+    com.eshop: DEBUG
+    org.springframework.cloud.gateway: DEBUG
