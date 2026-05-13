@@ -87,3 +87,6 @@ surefire-reports/
 *.swp
 *~
 node_modules/
+
+# Copyrighted PDFs - keep local only
+project-docs/book/*.pdf
