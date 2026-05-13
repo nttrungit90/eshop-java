@@ -397,49 +397,45 @@ phases:
         status: done
 
   - id: phase-6
-    name: Identity Service
-    description: "Last backend service. All services depend on it for JWT validation."
-    java_module: services/identity-service
+    name: Identity — Keycloak
+    description: |
+      Pivoted from Spring Authorization Server to Keycloak 26.1.
+      The Java identity-service module was removed; Keycloak runs in docker-compose
+      and imports infrastructure/keycloak/eshop-realm.json. All Java services validate
+      tokens against http://localhost:8180/realms/eshop.
+    java_module: infrastructure/keycloak
     dotnet_source: src/Identity.API
-    status: pending
+    status: done
     tasks:
-      - id: P6-T0
-        name: Implement identity-service
-        description: "AuthorizationServerConfig, OAuth2/OIDC flows, user management, client registrations (pre-plan)"
+      - id: P6-T1
+        name: Migrate identity-api to Keycloak
+        description: "Replace Java identity-service module with Keycloak realm import"
+        java_files:
+          - infrastructure/keycloak/eshop-realm.json
         status: done
 
-      - id: P6-T1
-        name: Update application.yml
-        java_files:
-          - services/identity-service/src/main/resources/application.yml
-        status: pending
-
       - id: P6-T2
-        name: Verify token compatibility
-        description: |
-          Ensure Java Identity produces tokens compatible with .NET services:
-          - Same issuer URL
-          - Same signing key format
-          - OIDC discovery endpoint at /.well-known/openid-configuration
-        status: pending
+        name: Fix Keycloak claims and logout redirect, enable Jaeger tracing
+        status: done
 
       - id: P6-T3
-        name: Verify compilation
-        status: pending
-
-      - id: P6-T4
-        name: Add to docker-compose.yml
+        name: Add Keycloak to docker-compose.yml
+        description: "Keycloak 26.1, port 8180, start-dev --import-realm"
         java_files:
           - docker-compose.yml
-        status: pending
+        status: done
+
+      - id: P6-T4
+        name: Point all Java services to Keycloak
+        description: "IDENTITY_URL and IDENTITY_JWK_SET_URI env in docker-compose entries"
+        java_files:
+          - docker-compose.yml
+        status: done
 
       - id: P6-T5
-        name: Update .NET AppHost
-        description: |
-          Disable .NET Identity.API, point all services to Java identity at localhost:9100.
-        dotnet_files:
-          - src/eShop.AppHost/Program.cs
-        status: pending
+        name: Accept at+jwt token type from .NET Identity
+        description: "Transition compat with Duende IdentityServer tokens"
+        status: done
 
   - id: phase-7
     name: WebApp
@@ -513,3 +509,52 @@ phases:
           Update README and remove .NET AppHost dependency.
           Single command: docker compose up --build
         status: pending
+
+  - id: phase-9
+    name: Mobile BFF
+    description: "Spring Cloud Gateway Server MVC routing proxy for mobile clients (added beyond original plan)."
+    java_module: services/mobile-bff
+    dotnet_source: src/Mobile.Bff.Shopping
+    status: done
+    tasks:
+      - id: P9-T1
+        name: Create mobile-bff module
+        description: "Spring Cloud Gateway Server MVC routes for catalog and ordering APIs"
+        java_files:
+          - services/mobile-bff/pom.xml
+          - services/mobile-bff/src/main/java
+          - services/mobile-bff/src/main/resources/application.yml
+        status: done
+
+      - id: P9-T2
+        name: Add to docker-compose.yml
+        description: "Port 11632, routes /catalog-api/**, /api/catalog/**, /api/orders/**"
+        java_files:
+          - docker-compose.yml
+        status: done
+
+  - id: phase-10
+    name: Webhooks Client
+    description: "OAuth2 client demo that subscribes to and receives webhook callbacks (added beyond original plan)."
+    java_module: clients/webhooks-client
+    dotnet_source: src/WebhookClient
+    status: done
+    tasks:
+      - id: P10-T1
+        name: Create webhooks-client module
+        description: "OAuth2 client + webhook receiver"
+        java_files:
+          - clients/webhooks-client/pom.xml
+          - clients/webhooks-client/src/main/java
+        status: done
+
+      - id: P10-T2
+        name: Fix login flow and webhooksdb schema creation
+        status: done
+
+      - id: P10-T3
+        name: Add to docker-compose.yml
+        description: "Port 9107, Keycloak OAuth2 wiring"
+        java_files:
+          - docker-compose.yml
+        status: done

@@ -6,6 +6,8 @@ Incrementally migrate .NET eShop services to Java/Spring Boot. Infrastructure (P
 
 Most Java services already have full implementations. The two stub services (payment-processor, order-processor) need real logic. Already-implemented services need config updates and integration testing against .NET Aspire infra.
 
+**Direction update (2026-05-13):** Identity migration target shifted from Spring Authorization Server to **Keycloak** (Phase 6 below). Two new modules were added beyond the original plan: **mobile-bff** (Spring Cloud Gateway, Phase 9) and **webhooks-client** (OAuth2 subscriber demo, Phase 10).
+
 ## Phase 0: Common Libraries & Catalog Service (completed pre-plan)
 
 ### Common Libraries
@@ -71,14 +73,15 @@ Most Java services already have full implementations. The two stub services (pay
 - [x] P5-T3: Add basket-service to docker-compose.yml
 - [x] P5-T4: Update .NET AppHost Program.cs with `useJavaBasket` flag
 
-## Phase 6: Identity Service (last backend — all services depend on it)
+## Phase 6: Identity — Pivoted to Keycloak (replaces Spring Authorization Server)
 
-- [x] P6-T0: Implement identity-service (AuthorizationServerConfig, OAuth2/OIDC)
-- [ ] P6-T1: Update application.yml with Aspire-managed Postgres credentials and OTLP config
-- [ ] P6-T2: Verify token format, issuer URL, signing keys match .NET Identity.API
-- [ ] P6-T3: Verify compilation and run tests
-- [ ] P6-T4: Add identity-service to docker-compose.yml
-- [ ] P6-T5: Update .NET AppHost Program.cs to disable .NET Identity.API and use Java
+The Java `identity-service` module was removed in favour of running Keycloak 26.1 in docker-compose. All Java services now validate tokens against `http://localhost:8180/realms/eshop`.
+
+- [x] P6-T1: Migrate identity-api to Keycloak (realm `eshop`, import from `infrastructure/keycloak/eshop-realm.json`)
+- [x] P6-T2: Fix Keycloak claims, logout redirect, enable Jaeger tracing
+- [x] P6-T3: Add Keycloak service to docker-compose.yml (port 8180, `start-dev --import-realm`)
+- [x] P6-T4: Point all Java services to Keycloak (`IDENTITY_URL`, `IDENTITY_JWK_SET_URI` env)
+- [x] P6-T5: Accept `at+jwt` token type from .NET Identity (transition compat)
 
 ## Phase 7: WebApp (React SPA — after all backends)
 
@@ -89,9 +92,26 @@ Most Java services already have full implementations. The two stub services (pay
 
 ## Phase 8: Migrate Infrastructure to docker-compose
 
+Keycloak is already in docker-compose (Phase 6). This phase moves the remaining Aspire-managed infra (Postgres, Redis, RabbitMQ) into the same compose file.
+
 - [ ] P8-T1: Add Postgres (pgvector) to docker-compose.yml with init scripts
 - [ ] P8-T2: Add Redis to docker-compose.yml
 - [ ] P8-T3: Add RabbitMQ to docker-compose.yml
-- [ ] P8-T4: Update all service configs to use docker-compose network hostnames
+- [ ] P8-T4: Update all service configs to use docker-compose network hostnames (replace `host.docker.internal`)
 - [ ] P8-T5: Verify full system starts with single `docker compose up --build`
 - [ ] P8-T6: Remove .NET AppHost dependency — document final startup procedure
+
+## Phase 9: Mobile BFF (out-of-plan addition — completed)
+
+Spring Cloud Gateway Server MVC routing proxy that fronts the catalog and ordering APIs for mobile clients.
+
+- [x] P9-T1: Create `services/mobile-bff` module (Spring Cloud Gateway Server MVC)
+- [x] P9-T2: Add mobile-bff to docker-compose.yml on port 11632 with routes for `/catalog-api/**`, `/api/catalog/**`, `/api/orders/**`
+
+## Phase 10: Webhooks Client (out-of-plan addition — completed)
+
+OAuth2 client demo that subscribes to and receives webhook callbacks from `webhooks-service`.
+
+- [x] P10-T1: Create `clients/webhooks-client` module (OAuth2 client + webhook receiver)
+- [x] P10-T2: Fix login flow and webhooksdb schema creation
+- [x] P10-T3: Add webhooks-client to docker-compose.yml on port 9107 with Keycloak OAuth2 wiring

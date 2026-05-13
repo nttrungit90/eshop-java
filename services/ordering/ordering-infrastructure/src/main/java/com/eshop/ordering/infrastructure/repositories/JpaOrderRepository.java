@@ -1,9 +1,3 @@
-/**
- * Converted from: src/Ordering.Infrastructure/Repositories/OrderRepository.cs
- * .NET Class: eShop.Ordering.Infrastructure.Repositories.OrderRepository
- *
- * JPA implementation of OrderRepository.
- */
 package com.eshop.ordering.infrastructure.repositories;
 
 import com.eshop.ordering.domain.aggregates.order.Order;
@@ -23,6 +17,9 @@ public interface JpaOrderRepository extends JpaRepository<Order, Long>, OrderRep
     Optional<Order> findById(Long orderId);
 
     @Override
-    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.orderItems WHERE o.buyerId = :buyerId ORDER BY o.orderDate DESC")
-    List<Order> findByBuyerId(String buyerId);
+    @Query("SELECT DISTINCT o FROM Order o " +
+            "LEFT JOIN FETCH o.orderItems " +
+            "WHERE o.buyerId = (SELECT b.id FROM Buyer b WHERE b.identityGuid = :identityGuid) " +
+            "ORDER BY o.orderDate DESC")
+    List<Order> findByIdentityGuid(String identityGuid);
 }

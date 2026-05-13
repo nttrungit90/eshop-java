@@ -1,9 +1,3 @@
-/**
- * Converted from: src/Ordering.Domain/AggregatesModel/OrderAggregate/IOrderRepository.cs
- * .NET Interface: eShop.Ordering.Domain.AggregatesModel.OrderAggregate.IOrderRepository
- *
- * Repository interface for Order aggregate.
- */
 package com.eshop.ordering.domain.aggregates.order;
 
 import java.util.List;
@@ -15,5 +9,9 @@ public interface OrderRepository {
 
     Optional<Order> findById(Long orderId);
 
-    List<Order> findByBuyerId(String buyerId);
+    /**
+     * Find all orders for a given Keycloak identity (sub claim).
+     * Joins through ordering.buyers."IdentityGuid".
+     */
+    List<Order> findByIdentityGuid(String identityGuid);
 }

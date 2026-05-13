@@ -170,6 +170,38 @@ services:
     networks:
       - eshop-network
 
+  ordering-api:
+    build:
+      context: ./services/ordering/ordering-api
+      dockerfile: Dockerfile
+    container_name: eshop-ordering
+    ports:
+      - "9102:9102"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/orderingdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 71UhdH_{f7C+yPyrh92RRW
+      SPRING_RABBITMQ_ADDRESSES: host.docker.internal:5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
+      IDENTITY_URL: http://host.docker.internal:8180/realms/eshop
+      IDENTITY_JWK_SET_URI: http://host.docker.internal:8180/realms/eshop/protocol/openid-connect/certs
+      SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
+      SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-URL: http://host.docker.internal:9102
+      MANAGEMENT_OTLP_TRACING_ENDPOINT: http://jaeger:4318/v1/traces
+    depends_on:
+      spring-boot-admin:
+        condition: service_started
+      jaeger:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9102/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - eshop-network
+
   basket-service:
     build:
       context: ./services/basket-service

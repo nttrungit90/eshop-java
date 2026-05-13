@@ -1,9 +1,3 @@
-/**
- * Converted from: src/Ordering.Domain/AggregatesModel/OrderAggregate/OrderItem.cs
- * .NET Class: eShop.Ordering.Domain.AggregatesModel.OrderAggregate.OrderItem
- *
- * Entity representing an item in an order.
- */
 package com.eshop.ordering.domain.aggregates.order;
 
 import com.eshop.ordering.domain.seedwork.Entity;
@@ -12,40 +6,42 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @jakarta.persistence.Entity
-@Table(name = "order_items")
+@Table(name = "orderItems", schema = "ordering")
 public class OrderItem extends Entity {
 
-    @Column(nullable = false)
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "orderitemseq")
+    @SequenceGenerator(name = "orderitemseq", sequenceName = "ordering.orderitemseq", allocationSize = 10)
+    @Column(name = "Id")
+    private Long id;
+
+    @Column(name = "ProductId", nullable = false)
     private Long productId;
 
-    @Column(nullable = false, length = 200)
+    @Column(name = "ProductName", nullable = false, length = 200)
     private String productName;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(name = "UnitPrice", nullable = false)
     private BigDecimal unitPrice;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(name = "Discount", nullable = false)
     private BigDecimal discount;
 
-    @Column(nullable = false)
+    @Column(name = "Units", nullable = false)
     private int units;
 
+    @Column(name = "PictureUrl")
     private String pictureUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "OrderId")
     private Order order;
 
-    protected OrderItem() {
-    }
+    protected OrderItem() {}
 
     public OrderItem(Long productId, String productName, BigDecimal unitPrice, BigDecimal discount, String pictureUrl, int units) {
-        if (units <= 0) {
-            throw new IllegalArgumentException("Invalid number of units");
-        }
-        if (unitPrice.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Invalid unit price");
-        }
+        if (units <= 0) throw new IllegalArgumentException("Invalid number of units");
+        if (unitPrice.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Invalid unit price");
 
         this.productId = productId;
         this.productName = productName;
@@ -56,16 +52,12 @@ public class OrderItem extends Entity {
     }
 
     public void setNewDiscount(BigDecimal discount) {
-        if (discount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Discount is not valid");
-        }
+        if (discount.compareTo(BigDecimal.ZERO) < 0) throw new IllegalArgumentException("Discount is not valid");
         this.discount = discount;
     }
 
     public void addUnits(int units) {
-        if (units < 0) {
-            throw new IllegalArgumentException("Invalid units");
-        }
+        if (units < 0) throw new IllegalArgumentException("Invalid units");
         this.units += units;
     }
 
@@ -73,6 +65,7 @@ public class OrderItem extends Entity {
         return unitPrice.multiply(BigDecimal.valueOf(units)).subtract(discount);
     }
 
+    @Override public Long getId() { return id; }
     public Long getProductId() { return productId; }
     public String getProductName() { return productName; }
     public BigDecimal getUnitPrice() { return unitPrice; }

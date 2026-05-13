@@ -15,8 +15,10 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.DefaultClassMapper;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,7 +100,27 @@ public class RabbitMQConfig {
 
     @Bean
     public MessageConverter jsonMessageConverter() {
-        return new Jackson2JsonMessageConverter(eventBusObjectMapper());
+        Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(eventBusObjectMapper());
+        // Cross-service messages carry a __TypeId__ header with the publisher's FQN
+        // (e.g. com.eshop.orderprocessor.events.GracePeriodConfirmedIntegrationEvent),
+        // which doesn't exist in subscriber classpaths. DefaultClassMapper's setDefaultType only
+        // applies when the header is missing — not when it points to an unresolvable class.
+        // Override toClass() to fall back to a generic Map so conversion succeeds; @RabbitListener
+        // handlers receive the raw Message and re-parse the body with their service-local class.
+        DefaultClassMapper classMapper = new DefaultClassMapper() {
+            @Override
+            public Class<?> toClass(org.springframework.amqp.core.MessageProperties properties) {
+                try {
+                    return super.toClass(properties);
+                } catch (Exception e) {
+                    return java.util.LinkedHashMap.class;
+                }
+            }
+        };
+        classMapper.setDefaultType(java.util.LinkedHashMap.class);
+        classMapper.setTrustedPackages("*");
+        converter.setClassMapper(classMapper);
+        return converter;
     }
 
     @Bean
@@ -107,5 +129,20 @@ public class RabbitMQConfig {
         template.setMessageConverter(messageConverter);
         template.setExchange(EXCHANGE_NAME);
         return template;
+    }
+
+    /**
+     * Override Spring Boot's default container factory so @RabbitListener consumers
+     * use OUR tolerant Jackson converter (the one above with the LinkedHashMap default
+     * class mapper). Without this, the default container factory installs its own
+     * Jackson2JsonMessageConverter that fails on unknown __TypeId__ classes.
+     */
+    @Bean
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
+            ConnectionFactory connectionFactory, MessageConverter messageConverter) {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(messageConverter);
+        return factory;
     }
 }
