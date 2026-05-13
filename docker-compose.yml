@@ -1,14 +1,73 @@
-# Docker Compose for migrated Java services running alongside .NET Aspire
+# Docker Compose for the full Java stack.
 #
-# Infrastructure (postgres, redis, rabbitmq) is managed by .NET Aspire AppHost.
-# Only migrated Java services and Java-specific observability tools run here.
+# Phase 8: Postgres / Redis / RabbitMQ are now owned by this file (previously
+# Aspire-managed). The .NET Aspire AppHost only launches the Blazor WebApp
+# (and points it at this compose stack via host ports).
 #
 # Run with: docker compose up --build
-# Dashboard: http://localhost:9090 (Spring Boot Admin)
-# Project Docs: http://localhost:3333 (Migration + Architecture + Notes)
-# Tracing: http://localhost:16686 (Jaeger)
+# Dashboard:    http://localhost:9090   (Spring Boot Admin)
+# Project Docs: http://localhost:3333   (Migration + Architecture + Notes)
+# Tracing:      http://localhost:16686  (Jaeger)
+# RabbitMQ mgmt:http://localhost:15672  (guest / see compose env)
 
 services:
+  # =============================================================================
+  # INFRASTRUCTURE — Postgres, Redis, RabbitMQ
+  # =============================================================================
+
+  postgres:
+    image: ankane/pgvector:latest
+    container_name: eshop-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: 71UhdH_{f7C+yPyrh92RRW
+      POSTGRES_DB: postgres
+    volumes:
+      # Named volume — reuses the existing "eshop-postgres-data" created by Aspire,
+      # preserving catalogdb/orderingdb/webhooksdb data on the first compose-up.
+      - eshop-postgres-data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    networks:
+      - eshop-network
+
+  redis:
+    image: redis:8.2
+    container_name: eshop-redis
+    command: ["redis-server", "--requirepass", "W7DjT4JQHfm1tMBqFZfYJu"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "W7DjT4JQHfm1tMBqFZfYJu", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    networks:
+      - eshop-network
+
+  rabbitmq:
+    image: rabbitmq:4.2-management
+    container_name: eshop-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: WBpzyj95KTuVkpGxR5Fx1j
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - eshop-network
+
+
   # =============================================================================
   # OBSERVABILITY
   # =============================================================================
@@ -89,10 +148,10 @@ services:
     ports:
       - "9101:9101"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/catalogdb
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/catalogdb
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 71UhdH_{f7C+yPyrh92RRW
-      SPRING_RABBITMQ_ADDRESSES: host.docker.internal:5672
+      SPRING_RABBITMQ_ADDRESSES: rabbitmq:5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
       IDENTITY_URL: http://host.docker.internal:8180/realms/eshop
@@ -105,6 +164,10 @@ services:
         condition: service_started
       jaeger:
         condition: service_started
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9101/actuator/health"]
       interval: 30s
@@ -121,7 +184,7 @@ services:
     ports:
       - "9106:9106"
     environment:
-      SPRING_RABBITMQ_ADDRESSES: host.docker.internal:5672
+      SPRING_RABBITMQ_ADDRESSES: rabbitmq:5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
       SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
@@ -132,6 +195,8 @@ services:
         condition: service_started
       jaeger:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9106/actuator/health"]
       interval: 30s
@@ -148,10 +213,10 @@ services:
     ports:
       - "9105:9105"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/orderingdb
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/orderingdb
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 71UhdH_{f7C+yPyrh92RRW
-      SPRING_RABBITMQ_ADDRESSES: host.docker.internal:5672
+      SPRING_RABBITMQ_ADDRESSES: rabbitmq:5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
       SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
@@ -162,6 +227,10 @@ services:
         condition: service_started
       jaeger:
         condition: service_started
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9105/actuator/health"]
       interval: 30s
@@ -178,10 +247,10 @@ services:
     ports:
       - "9102:9102"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/orderingdb
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/orderingdb
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 71UhdH_{f7C+yPyrh92RRW
-      SPRING_RABBITMQ_ADDRESSES: host.docker.internal:5672
+      SPRING_RABBITMQ_ADDRESSES: rabbitmq:5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
       IDENTITY_URL: http://host.docker.internal:8180/realms/eshop
@@ -194,6 +263,10 @@ services:
         condition: service_started
       jaeger:
         condition: service_started
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9102/actuator/health"]
       interval: 30s
@@ -211,10 +284,10 @@ services:
       - "9103:9103"
       - "9113:9113"
     environment:
-      SPRING_DATA_REDIS_HOST: host.docker.internal
-      SPRING_DATA_REDIS_PORT: 6380
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
       SPRING_DATA_REDIS_PASSWORD: W7DjT4JQHfm1tMBqFZfYJu
-      SPRING_RABBITMQ_ADDRESSES: host.docker.internal:5672
+      SPRING_RABBITMQ_ADDRESSES: rabbitmq:5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
       IDENTITY_URL: http://host.docker.internal:8180/realms/eshop
@@ -227,6 +300,10 @@ services:
         condition: service_started
       jaeger:
         condition: service_started
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9103/actuator/health"]
       interval: 30s
@@ -243,10 +320,10 @@ services:
     ports:
       - "9104:9104"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/webhooksdb
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/webhooksdb
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 71UhdH_{f7C+yPyrh92RRW
-      SPRING_RABBITMQ_ADDRESSES: host.docker.internal:5672
+      SPRING_RABBITMQ_ADDRESSES: rabbitmq:5672
       SPRING_RABBITMQ_USERNAME: guest
       SPRING_RABBITMQ_PASSWORD: WBpzyj95KTuVkpGxR5Fx1j
       IDENTITY_URL: http://host.docker.internal:8180/realms/eshop
@@ -260,6 +337,10 @@ services:
         condition: service_started
       jaeger:
         condition: service_started
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9104/actuator/health"]
       interval: 30s
@@ -312,7 +393,7 @@ services:
       SPRING_CLOUD_GATEWAY_MVC_ROUTES_1_URI: http://catalog-service:9101
       SPRING_CLOUD_GATEWAY_MVC_ROUTES_1_PREDICATES_0: Path=/api/catalog/**
       SPRING_CLOUD_GATEWAY_MVC_ROUTES_2_ID: ordering
-      SPRING_CLOUD_GATEWAY_MVC_ROUTES_2_URI: http://host.docker.internal:9102
+      SPRING_CLOUD_GATEWAY_MVC_ROUTES_2_URI: http://ordering-api:9102
       SPRING_CLOUD_GATEWAY_MVC_ROUTES_2_PREDICATES_0: Path=/api/orders/**
       SPRING_BOOT_ADMIN_CLIENT_URL: http://spring-boot-admin:8181
       SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE-URL: http://host.docker.internal:11632
@@ -335,3 +416,9 @@ services:
 networks:
   eshop-network:
     driver: bridge
+
+volumes:
+  # Use the existing Aspire-created volume so prior order/buyer data survives the cut-over.
+  # On a fresh machine this will be a new empty volume + init.sql creates the three databases.
+  eshop-postgres-data:
+    name: eshop-postgres-data
