@@ -12,6 +12,7 @@ import ItemPage from './components/item/ItemPage'
 import CartPage from './components/cart/CartPage'
 import CheckoutPage from './components/checkout/CheckoutPage'
 import OrdersPage from './components/orders/OrdersPage'
+import FlowVerifier from './pages/dev/FlowVerifier'
 import { CartProvider } from './context/CartContext'
 import { PageHeaderProvider } from './components/layout/PageHeaderContext'
 import { setAuthToken } from './api/client'
@@ -40,6 +41,7 @@ function App() {
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/dev/flow" element={<FlowVerifier />} />
               <Route path="/authentication/login-callback" element={<LoginCallback />} />
             </Routes>
           </main>
