@@ -8,6 +8,7 @@ import { useAuth } from 'react-oidc-context'
 import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
 import CatalogPage from './components/catalog/CatalogPage'
+import ItemPage from './components/item/ItemPage'
 import CartPage from './components/cart/CartPage'
 import CheckoutPage from './components/checkout/CheckoutPage'
 import OrdersPage from './components/orders/OrdersPage'
@@ -33,6 +34,7 @@ function App() {
           <Routes>
             <Route path="/" element={<CatalogPage />} />
             <Route path="/catalog" element={<CatalogPage />} />
+            <Route path="/item/:itemId" element={<ItemPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/orders" element={<OrdersPage />} />

@@ -1,10 +1,13 @@
 /**
- * Converted from: src/WebApp/Components/CatalogListItem.razor
+ * Catalog grid card — matches Blazor CatalogListItem.razor.
  *
- * Individual catalog item card.
+ * The whole card is a link to /item/{id}; there's no inline Add-to-Cart button
+ * (that lives on the detail page). This mirrors the .NET reference UX where
+ * clicking a product opens its detail page, then "Log in to purchase" or
+ * "Add to shopping bag" is the next action.
  */
+import { Link } from 'react-router-dom'
 import { CatalogItem } from '../../types'
-import { useCart } from '../../context/CartContext'
 import { catalogApi } from '../../api/catalogApi'
 
 interface ItemCardProps {
@@ -12,57 +15,34 @@ interface ItemCardProps {
 }
 
 export default function ItemCard({ item }: ItemCardProps) {
-  const { addItem } = useCart()
   const picUrl = catalogApi.pictureUrl(item)
 
-  function handleAddToCart() {
-    addItem({
-      id: '',
-      productId: item.id,
-      productName: item.name,
-      unitPrice: item.price,
-      quantity: 1,
-      pictureUrl: picUrl,
-    })
-  }
-
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="h-48 bg-gray-100 flex items-center justify-center">
+    <Link
+      to={`/item/${item.id}`}
+      className="block bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all"
+    >
+      <div className="h-48 bg-white flex items-center justify-center p-4">
         <img
           src={picUrl}
           alt={item.name}
           className="max-h-full max-w-full object-contain"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/200?text=No+Image'
+            ;(e.target as HTMLImageElement).style.opacity = '0.2'
           }}
         />
       </div>
-      <div className="p-4">
-        <h3 className="font-semibold text-lg mb-2 truncate" title={item.name}>
+      <div className="px-4 pb-4 flex items-center gap-2">
+        <span className="font-semibold text-base truncate flex-1" title={item.name}>
           {item.name}
-        </h3>
-        <p className="text-gray-600 text-sm mb-2 line-clamp-2">
-          {item.description}
-        </p>
-        <div className="flex items-center justify-between">
-          <span className="text-xl font-bold text-primary">
-            ${item.price.toFixed(2)}
-          </span>
-          <button
-            onClick={handleAddToCart}
-            disabled={item.availableStock === 0}
-            className="bg-primary text-white px-4 py-2 rounded hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {item.availableStock === 0 ? 'Out of Stock' : 'Add to Cart'}
-          </button>
-        </div>
-        {item.availableStock > 0 && item.availableStock < 10 && (
-          <p className="text-orange-500 text-sm mt-2">
-            Only {item.availableStock} left in stock!
-          </p>
-        )}
+        </span>
+        <span className="text-base font-semibold text-gray-700 whitespace-nowrap">
+          ${item.price.toFixed(2)}
+        </span>
       </div>
-    </div>
+      {item.availableStock === 0 && (
+        <p className="px-4 pb-3 text-red-600 text-xs font-medium">Out of stock</p>
+      )}
+    </Link>
   )
 }
