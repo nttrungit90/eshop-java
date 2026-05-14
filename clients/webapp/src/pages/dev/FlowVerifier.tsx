@@ -393,9 +393,18 @@ export default function FlowVerifier() {
         </div>
       </div>
 
-      {!auth.isAuthenticated && (
-        <div className="bg-yellow-50 border border-yellow-300 p-3 rounded mb-6 text-sm">
-          You're not logged in. Click <strong>Log in</strong> in the header (alice / Pass123$), then come back here.
+      <AuthStatusPanel />
+
+      {!auth.isAuthenticated && !auth.isLoading && (
+        <div className="bg-yellow-50 border border-yellow-300 p-4 rounded mb-6 text-sm">
+          <p className="mb-3">
+            The flow verifier needs an authenticated session. Click below to sign in
+            with <code className="px-1 bg-white rounded">alice</code> /{' '}
+            <code className="px-1 bg-white rounded">Pass123$</code>:
+          </p>
+          <button onClick={() => auth.signinRedirect()} className="btn-brand">
+            Sign in with Keycloak →
+          </button>
         </div>
       )}
 
@@ -410,6 +419,55 @@ export default function FlowVerifier() {
         ))}
       </div>
     </div>
+  )
+}
+
+function AuthStatusPanel() {
+  const auth = useAuth()
+  const tok = auth.user?.access_token
+  const expSec = auth.user?.expires_at ? auth.user.expires_at - Math.floor(Date.now() / 1000) : null
+  const sub = (auth.user?.profile?.sub as string) || ''
+  const name = (auth.user?.profile?.name as string) || (auth.user?.profile?.preferred_username as string) || ''
+
+  const rows = [
+    ['auth.isLoading', String(auth.isLoading)],
+    ['auth.isAuthenticated', String(auth.isAuthenticated)],
+    ['auth.error', auth.error ? auth.error.message : '(none)'],
+    ['auth.user is set', auth.user ? 'yes' : 'no'],
+    ['access_token', tok ? `${tok.slice(0, 12)}…${tok.slice(-8)} (${tok.length} chars)` : '(missing)'],
+    ['token expires in', expSec != null ? `${expSec}s` : '(unknown)'],
+    ['profile.sub', sub || '(missing)'],
+    ['profile.name', name || '(missing)'],
+    ['scope', auth.user?.scope || '(missing)'],
+    ['sessionStorage keys (oidc.*)', String(Object.keys(sessionStorage).filter((k) => k.startsWith('oidc.')).length)],
+  ] as const
+
+  return (
+    <details className="mb-4 bg-gray-50 border border-gray-300 rounded text-xs">
+      <summary className="cursor-pointer px-3 py-2 font-semibold text-sm">
+        🔍 Auth diagnostic — what the verifier sees
+      </summary>
+      <div className="px-3 pb-3">
+        <table className="w-full">
+          <tbody>
+            {rows.map(([k, v]) => (
+              <tr key={k} className="border-t border-gray-200">
+                <td className="py-1 pr-3 font-mono text-gray-600">{k}</td>
+                <td className="py-1 font-mono break-all">{v}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {auth.isAuthenticated && (
+          <button
+            onClick={() => auth.signoutRedirect()}
+            className="mt-3 text-xs underline text-red-600"
+          >
+            Sign out (test re-login)
+          </button>
+        )}
+      </div>
+    </details>
   )
 }
 

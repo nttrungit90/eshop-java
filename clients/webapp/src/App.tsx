@@ -3,7 +3,7 @@
  * axios client whenever it changes so all backend calls are auth'd.
  */
 import { useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useNavigate } from 'react-router-dom'
 import { useAuth } from 'react-oidc-context'
 import SiteHeader from './components/layout/SiteHeader'
 import Footer from './components/layout/Footer'
@@ -52,12 +52,23 @@ function App() {
   )
 }
 
+/**
+ * OIDC return URL. AuthProvider does the code → token exchange under the hood;
+ * once `isLoading` flips false and we have a user, navigate back to the home page
+ * via react-router (no full reload) so the OIDC session state stays hydrated.
+ */
 function LoginCallback() {
   const auth = useAuth()
-  if (auth.isLoading) return <div>Processing login…</div>
-  if (auth.error) return <div>Error: {auth.error.message}</div>
-  window.location.href = '/'
-  return null
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!auth.isLoading && !auth.error && auth.isAuthenticated) {
+      navigate('/', { replace: true })
+    }
+  }, [auth.isLoading, auth.error, auth.isAuthenticated, navigate])
+
+  if (auth.error) return <div className="p-8">Login error: {auth.error.message}</div>
+  return <div className="p-8">Processing login…</div>
 }
 
 export default App
