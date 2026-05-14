@@ -439,76 +439,180 @@ phases:
 
   - id: phase-7
     name: WebApp
-    description: "React SPA. Point to Java backends."
+    description: "React SPA replacing the .NET Blazor WebApp; wired to Java backends + Keycloak via nginx proxy."
     java_module: clients/webapp
     dotnet_source: src/WebApp
-    status: pending
+    status: done
+    completed: 2026-05-14
+    commits:
+      - 9bf10d5 # initial wiring
+      - c26ba82 # Blazor visual brand + image fix
+      - 6d12dad # product detail page + login-to-purchase
+      - cc1b753 # checkout simplified to match Blazor
+      - ac2703e # Cart rewrite + per-page titles
     tasks:
       - id: P7-T0
-        name: Implement webapp
-        description: "React components, API clients, routing, auth integration (pre-plan)"
+        name: Implement webapp scaffolding
+        description: "React components, API clients, routing, OIDC auth (pre-plan)"
         status: done
 
       - id: P7-T1
-        name: Update environment config
+        name: Centralised axios client + types matched to Java wire format
+        description: |
+          src/api/client.ts injects `?api-version=1.0` and `Authorization: Bearer`.
+          PaginatedResponse switched to {pageIndex, pageSize, count, data};
+          new OrderSummary type for the list endpoint; Order kept for detail.
         java_files:
-          - clients/webapp/.env
-        status: pending
+          - clients/webapp/src/api/client.ts
+          - clients/webapp/src/api/catalogApi.ts
+          - clients/webapp/src/api/orderingApi.ts
+          - clients/webapp/src/api/basketApi.ts
+          - clients/webapp/src/types/index.ts
+        status: done
 
       - id: P7-T2
-        name: Verify build
-        status: pending
+        name: Checkout payload matches Java DDD endpoint
+        description: |
+          x-requestid UUID header per POST/PUT (idempotency); MM/YY → ISO Instant for
+          cardExpiration; items use `quantity` (not units); userId/userName pulled from JWT.
+        status: done
 
       - id: P7-T3
-        name: Add to docker-compose.yml
+        name: Add webapp service to docker-compose
+        description: |
+          nginx on port 8080 serves the SPA + proxies /api/{catalog,basket,orders}
+          to the Java backends — keeps the browser same-origin so no CORS needed.
+          Dockerfile uses copy-prebuilt pattern (npm run build on the host).
         java_files:
           - docker-compose.yml
-        status: pending
+          - clients/webapp/Dockerfile
+          - clients/webapp/nginx.conf
+          - clients/webapp/.dockerignore
+        status: done
+
+      - id: P7-T4
+        name: Restore Blazor visual brand
+        description: |
+          Ported AdventureWorks logo SVGs, hero image, Plus Jakarta Sans, icon SVGs
+          into clients/webapp/public/. New Hero component on catalog page.
+          Tailwind theme switched to brand colors (primary #11118c).
+        java_files:
+          - clients/webapp/public/images/logo-header.svg
+          - clients/webapp/public/images/logo-footer.svg
+          - clients/webapp/public/images/header-home.webp
+          - clients/webapp/public/fonts/plus-jakarta-sans-v8-latin-*.woff2
+          - clients/webapp/src/index.css
+          - clients/webapp/tailwind.config.js
+        status: done
+
+      - id: P7-T5
+        name: Product detail page (/item/:itemId)
+        description: |
+          Mirrors Components/Pages/Item/ItemPage.razor — clicking a catalog card opens
+          the detail page; anonymous shows "Log in to purchase" → OIDC redirect; logged-in
+          shows "Add to shopping bag"; "X in shopping bag" link when already added.
+        java_files:
+          - clients/webapp/src/components/item/ItemPage.tsx
+          - clients/webapp/src/components/catalog/ItemCard.tsx
+          - clients/webapp/src/App.tsx
+        status: done
+
+      - id: P7-T6
+        name: Checkout simplified to address-only
+        description: |
+          Removed Payment Information / Order Summary sections — not in Blazor.
+          Address defaults from Keycloak claims (address_street, address_city, …);
+          card details ride from JWT (card_number, card_holder, …) with expiration
+          hardcoded to 1y-from-now (matches .NET BasketState.CheckoutAsync).
+        status: done
+
+      - id: P7-T7
+        name: Cart page rewritten to match Blazor
+        description: |
+          3-column flex layout (Products / Quantity / Total) with per-row Update
+          button; right-side summary sidebar with cart icon + qty badge, total,
+          Check out primary button, Continue shopping link. Removed "Clear Cart"
+          (not in Blazor).
+        status: done
+
+      - id: P7-T8
+        name: Per-page document titles
+        description: |
+          useDocumentTitle hook applied per page: AdventureWorks /
+          {Name} | AdventureWorks / Shopping Bag | AdventureWorks /
+          Checkout | AdventureWorks / My Orders | AdventureWorks.
+        java_files:
+          - clients/webapp/src/hooks/useDocumentTitle.ts
+        status: done
+
+      - id: P7-T9
+        name: Fix product image 404s
+        description: |
+          <img src> bypasses axios so the api-version query our interceptor adds
+          was missing — catalog rejected with 400. Inlined ?api-version=1.0 in
+          catalogApi.pictureUrl().
+        status: done
 
   - id: phase-8
     name: Migrate Infrastructure
-    description: "Move Postgres, Redis, RabbitMQ from .NET Aspire to docker-compose. Single command startup."
-    status: pending
+    description: "Move Postgres, Redis, RabbitMQ from .NET Aspire to docker-compose. Java stack now self-contained."
+    status: done
+    completed: 2026-05-13
+    commits:
+      - 92c1f42
     tasks:
       - id: P8-T1
         name: Add Postgres to docker-compose.yml
+        description: |
+          ankane/pgvector:latest on 5432 with healthcheck. Reuses the existing
+          eshop-postgres-data volume so prior order/buyer data survived the
+          cut-over. infrastructure/postgres/init.sql creates catalogdb /
+          orderingdb / webhooksdb on a fresh data dir.
         java_files:
           - docker-compose.yml
-          - scripts/init-databases.sql
-        status: pending
+          - infrastructure/postgres/init.sql
+        status: done
 
       - id: P8-T2
         name: Add Redis to docker-compose.yml
+        description: redis:8.2 on 6379 with --requirepass + healthcheck
         java_files:
           - docker-compose.yml
-        status: pending
+        status: done
 
       - id: P8-T3
         name: Add RabbitMQ to docker-compose.yml
+        description: rabbitmq:4.2-management on 5672 + 15672 with healthcheck
         java_files:
           - docker-compose.yml
-        status: pending
+        status: done
 
       - id: P8-T4
         name: Update all service configs for docker networking
         description: |
-          Change all application.yml files to use docker-compose service hostnames
-          instead of host.docker.internal.
-        status: pending
+          host.docker.internal:{5432,5672} → compose service names
+          (postgres, rabbitmq); basket-service Redis 6380 → 6379;
+          mobile-bff route → ordering-api:9102. depends_on: service_healthy
+          gates added to all infra-dependent Java services.
+        status: done
 
       - id: P8-T5
         name: Verify full system startup
         description: |
-          Run: docker compose up --build
-          Verify all services start and can communicate.
-        status: pending
+          docker compose up -d → all 11 services healthy. Order #82 created
+          on compose-only infra advanced Submitted → Paid in 80s through the
+          full DDD pipeline.
+        status: done
 
       - id: P8-T6
-        name: Document final startup procedure
+        name: Update .NET AppHost
         description: |
-          Update README and remove .NET AppHost dependency.
-          Single command: docker compose up --build
-        status: pending
+          Drop AddPostgres/AddRedis/AddRabbitMQ. WebApp gets explicit
+          ConnectionStrings__eventbus pointing at the compose host ports.
+          (After Phase 7 lands, the AppHost can be removed entirely.)
+        java_files:
+          - ../eShop/src/eShop.AppHost/Program.cs   # local only — upstream is dotnet/eShop
+        status: done
 
   - id: phase-9
     name: Mobile BFF

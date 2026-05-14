@@ -83,23 +83,28 @@ The Java `identity-service` module was removed in favour of running Keycloak 26.
 - [x] P6-T4: Point all Java services to Keycloak (`IDENTITY_URL`, `IDENTITY_JWK_SET_URI` env)
 - [x] P6-T5: Accept `at+jwt` token type from .NET Identity (transition compat)
 
-## Phase 7: WebApp (React SPA — after all backends)
+## Phase 7: WebApp (React SPA — after all backends) — COMPLETED 2026-05-14
 
 - [x] P7-T0: Implement webapp (React components, API clients, routing, auth)
-- [ ] P7-T1: Update environment config to point to Java backend URLs
-- [ ] P7-T2: Verify build and test
-- [ ] P7-T3: Add webapp to docker-compose.yml
+- [x] P7-T1: Centralised axios client with auth interceptor + `?api-version=1.0`; types and paginated shape matched to Java wire format
+- [x] P7-T2: Build + smoke-test clean; checkout sends `x-requestid` for idempotency, parses MM/YY → ISO Instant, uses `quantity` (not units)
+- [x] P7-T3: `webapp` service added to docker-compose on port 8080 — nginx proxies `/api/*` to the Java backends (same-origin, no CORS needed)
+- [x] P7-T4 (Blazor visual parity): ported AdventureWorks logo SVGs, hero image, Plus Jakarta Sans, icon SVGs; new Hero component on catalog page; Tailwind theme switched to brand colors (`primary: #11118c`)
+- [x] P7-T5: Product detail page at `/item/:itemId` with "Log in to purchase" / "Add to shopping bag" flow (matches `Components/Pages/Item/ItemPage.razor`)
+- [x] P7-T6: Checkout simplified to address-only with JWT-claim defaults; card details ride from JWT, expiration hardcoded to 1y-from-now (matches .NET `BasketState.CheckoutAsync`)
+- [x] P7-T7: Cart page rewritten to 3-column flex (Products / Quantity / Total) with per-row Update button and right-side summary sidebar
+- [x] P7-T8: Per-page document titles via `useDocumentTitle` hook (`AdventureWorks`, `{Name} | AdventureWorks`, `Shopping Bag | AdventureWorks`, `Checkout | AdventureWorks`, `My Orders | AdventureWorks`)
 
-## Phase 8: Migrate Infrastructure to docker-compose
+## Phase 8: Migrate Infrastructure to docker-compose — COMPLETED 2026-05-13
 
-Keycloak is already in docker-compose (Phase 6). This phase moves the remaining Aspire-managed infra (Postgres, Redis, RabbitMQ) into the same compose file.
+Keycloak was already in docker-compose (Phase 6); Phase 8 moved the remaining Aspire-managed infra (Postgres, Redis, RabbitMQ) into the same compose file. The Java stack now runs entirely from `docker compose up -d` with no .NET dependency.
 
-- [ ] P8-T1: Add Postgres (pgvector) to docker-compose.yml with init scripts
-- [ ] P8-T2: Add Redis to docker-compose.yml
-- [ ] P8-T3: Add RabbitMQ to docker-compose.yml
-- [ ] P8-T4: Update all service configs to use docker-compose network hostnames (replace `host.docker.internal`)
-- [ ] P8-T5: Verify full system starts with single `docker compose up --build`
-- [ ] P8-T6: Remove .NET AppHost dependency — document final startup procedure
+- [x] P8-T1: Add Postgres (ankane/pgvector:latest) with healthcheck + init.sql that creates catalogdb / orderingdb / webhooksdb on a fresh volume
+- [x] P8-T2: Add Redis 8.2 with `--requirepass` + healthcheck
+- [x] P8-T3: Add RabbitMQ 4.2-management with healthcheck
+- [x] P8-T4: Replace `host.docker.internal:{5432,5672}` with compose service names (`postgres`, `rabbitmq`); basket-service Redis 6380 → 6379; mobile-bff route to `ordering-api:9102`. `depends_on: service_healthy` gates added.
+- [x] P8-T5: Verified full stack with `docker compose up -d` — order #82 cut over cleanly and advanced Submitted → Paid on the new infra
+- [x] P8-T6: .NET AppHost rewritten — drops `AddPostgres/AddRedis/AddRabbitMQ`, passes `ConnectionStrings__eventbus` env to the Blazor WebApp via the compose-published host ports. (After Phase 7 lands, the AppHost can be removed entirely — the React SPA replaces the Blazor WebApp it was launching.)
 
 ## Phase 9: Mobile BFF (out-of-plan addition — completed)
 
