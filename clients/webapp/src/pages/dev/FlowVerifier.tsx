@@ -235,50 +235,56 @@ export default function FlowVerifier() {
         log(6, { detail: `${data.items.length} item(s) round-tripped`, payload: data })
       })
 
-      // 8 — create order
+      // Build the order payload once — step 8 sends it, step 9 replays the SAME
+      // payload with the SAME x-requestid (realistic client retry).
+      const oneYr = new Date()
+      oneYr.setUTCFullYear(oneYr.getUTCFullYear() + 1)
+      const profile = auth.user!.profile as Record<string, unknown>
+      const orderPayload = {
+        userId: ctx.current!.buyerId,
+        userName: ctx.current!.userName,
+        buyer: ctx.current!.buyerId,
+        city: (profile.address_city as string) || 'Redmond',
+        street: (profile.address_street as string) || '15703 NE 61st Ct',
+        state: (profile.address_state as string) || 'WA',
+        country: (profile.address_country as string) || 'USA',
+        zipCode: (profile.address_zip_code as string) || '98052',
+        cardNumber: '4012888888881881',
+        cardHolderName: ctx.current!.userName,
+        cardExpiration: oneYr.toISOString(),
+        cardSecurityNumber: '123',
+        cardTypeId: 1,
+        items: [{
+          id: crypto.randomUUID(),
+          productId: ctx.current!.itemId,
+          productName: ctx.current!.itemName,
+          unitPrice: ctx.current!.itemPrice,
+          oldUnitPrice: 0,
+          quantity: 2,
+          pictureUrl: ctx.current!.itemPicUrl,
+        }],
+      }
       ctx.current!.requestId = crypto.randomUUID()
+
+      // 8 — create order
       await timeStep(7, '', async () => {
-        const oneYr = new Date()
-        oneYr.setUTCFullYear(oneYr.getUTCFullYear() + 1)
-        const profile = auth.user!.profile as Record<string, unknown>
-        const payload = {
-          userId: ctx.current!.buyerId,
-          userName: ctx.current!.userName,
-          buyer: ctx.current!.buyerId,
-          city: (profile.address_city as string) || 'Redmond',
-          street: (profile.address_street as string) || '15703 NE 61st Ct',
-          state: (profile.address_state as string) || 'WA',
-          country: (profile.address_country as string) || 'USA',
-          zipCode: (profile.address_zip_code as string) || '98052',
-          cardNumber: '4012888888881881',
-          cardHolderName: ctx.current!.userName,
-          cardExpiration: oneYr.toISOString(),
-          cardSecurityNumber: '123',
-          cardTypeId: 1,
-          items: [{
-            id: crypto.randomUUID(),
-            productId: ctx.current!.itemId,
-            productName: ctx.current!.itemName,
-            unitPrice: ctx.current!.itemPrice,
-            oldUnitPrice: 0,
-            quantity: 2,
-            pictureUrl: ctx.current!.itemPicUrl,
-          }],
-        }
-        const res = await client.post('/api/orders', payload, {
+        const res = await client.post('/api/orders', orderPayload, {
           headers: { 'x-requestid': ctx.current!.requestId },
         })
         log(7, {
           detail: `HTTP ${res.status} — x-requestid: ${ctx.current!.requestId}`,
-          payload: { request: payload, response_status: res.status, response_body: res.data },
+          payload: { request: orderPayload, response_status: res.status, response_body: res.data },
         })
       })
 
-      // 9 — idempotency replay (same x-requestid)
+      // 9 — idempotency replay (same payload + same x-requestid)
+      // Bean Validation runs before the idempotency check, so we MUST send the
+      // same valid payload — the IdempotentCommandExecutor recognises the
+      // requestId in ordering.requests and short-circuits without re-executing.
       await timeStep(8, '', async () => {
         const listBefore = await client.get('/api/orders')
         const maxBefore = listBefore.data[0]?.orderNumber ?? 0
-        const res = await client.post('/api/orders', { /* body can be anything — idempotent path short-circuits */ }, {
+        const res = await client.post('/api/orders', orderPayload, {
           headers: { 'x-requestid': ctx.current!.requestId! },
         })
         const listAfter = await client.get('/api/orders')
