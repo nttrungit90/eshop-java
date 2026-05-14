@@ -1,40 +1,47 @@
 /**
- * Converted from: src/WebApp/Services/CatalogService.cs
- *
- * API client for catalog service.
+ * Catalog API client — matches Java catalog-service routes.
  */
-import axios from 'axios'
+import client from './client'
 import { CatalogItem, CatalogBrand, CatalogType, PaginatedResponse } from '../types'
 
-const API_URL = import.meta.env.VITE_CATALOG_URL || '/api/catalog'
+const API_URL = '/api/catalog'
 
 export const catalogApi = {
-  async getItems(pageIndex = 0, pageSize = 10): Promise<PaginatedResponse<CatalogItem>> {
-    const response = await axios.get(`${API_URL}/items`, {
-      params: { pageIndex, pageSize }
+  async getItems(pageIndex = 0, pageSize = 12): Promise<PaginatedResponse<CatalogItem>> {
+    const { data } = await client.get(`${API_URL}/items`, {
+      params: { pageIndex, pageSize },
     })
-    return response.data
+    return data
   },
 
   async getItemById(id: number): Promise<CatalogItem> {
-    const response = await axios.get(`${API_URL}/items/${id}`)
-    return response.data
+    const { data } = await client.get(`${API_URL}/items/${id}`)
+    return data
   },
 
-  async getItemsByName(name: string, pageIndex = 0, pageSize = 10): Promise<PaginatedResponse<CatalogItem>> {
-    const response = await axios.get(`${API_URL}/items/by-name/${name}`, {
-      params: { pageIndex, pageSize }
+  async getItemsByName(name: string, pageIndex = 0, pageSize = 12): Promise<PaginatedResponse<CatalogItem>> {
+    const { data } = await client.get(`${API_URL}/items/by/${encodeURIComponent(name)}`, {
+      params: { pageIndex, pageSize },
     })
-    return response.data
+    return data
   },
 
+  // Java catalog uses camelCase paths: /catalogTypes, /catalogBrands
   async getCatalogTypes(): Promise<CatalogType[]> {
-    const response = await axios.get(`${API_URL}/catalog-types`)
-    return response.data
+    const { data } = await client.get(`${API_URL}/catalogTypes`)
+    return data
   },
 
   async getCatalogBrands(): Promise<CatalogBrand[]> {
-    const response = await axios.get(`${API_URL}/catalog-brands`)
-    return response.data
-  }
+    const { data } = await client.get(`${API_URL}/catalogBrands`)
+    return data
+  },
+
+  /**
+   * Build the picture URL for a catalog item. The /api/catalog/items/{id}/pic
+   * endpoint returns the binary image; goes through the SPA's nginx proxy.
+   */
+  pictureUrl(item: CatalogItem): string {
+    return item.pictureUri || `${API_URL}/items/${item.id}/pic`
+  },
 }

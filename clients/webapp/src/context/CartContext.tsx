@@ -3,7 +3,7 @@
  *
  * React context for shopping cart state management.
  */
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { useAuth } from 'react-oidc-context'
 import { BasketItem, CustomerBasket } from '../types'
 import { basketApi } from '../api/basketApi'
@@ -24,24 +24,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const auth = useAuth()
   const [items, setItems] = useState<BasketItem[]>([])
 
-  const buyerId = auth.user?.profile.sub || 'anonymous'
+  const buyerId = auth.user?.profile.sub
+  const authReady = auth.isAuthenticated && !!buyerId && !!auth.user?.access_token
 
   useEffect(() => {
-    loadBasket()
-  }, [buyerId])
-
-  async function loadBasket() {
-    try {
-      const basket = await basketApi.getBasket(buyerId)
-      setItems(basket.items || [])
-    } catch (error) {
-      console.error('Failed to load basket', error)
+    // Only sync with basket-service when authenticated — REST endpoints require Bearer token.
+    if (!authReady) return
+    let cancelled = false
+    basketApi
+      .getBasket(buyerId!)
+      .then((b) => {
+        if (!cancelled) setItems(b.items || [])
+      })
+      .catch((err) => console.error('Failed to load basket', err))
+    return () => {
+      cancelled = true
     }
-  }
+  }, [authReady, buyerId])
 
   async function saveBasket(newItems: BasketItem[]) {
+    if (!authReady) return
     try {
-      const basket: CustomerBasket = { buyerId, items: newItems }
+      const basket: CustomerBasket = { buyerId: buyerId!, items: newItems }
       await basketApi.updateBasket(basket)
     } catch (error) {
       console.error('Failed to save basket', error)
@@ -87,7 +91,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   function clearCart() {
     setItems([])
-    basketApi.deleteBasket(buyerId)
+    if (authReady) {
+      basketApi.deleteBasket(buyerId!).catch((err) => console.error('Failed to clear basket', err))
+    }
   }
 
   const total = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)

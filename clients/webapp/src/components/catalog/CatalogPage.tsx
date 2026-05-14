@@ -8,10 +8,13 @@ import { catalogApi } from '../../api/catalogApi'
 import { CatalogItem, CatalogBrand, CatalogType } from '../../types'
 import ItemCard from './ItemCard'
 
+const PAGE_SIZE = 12
+
 export default function CatalogPage() {
   const [items, setItems] = useState<CatalogItem[]>([])
-  const [brands, setBrands] = useState<CatalogBrand[]>([])
-  const [types, setTypes] = useState<CatalogType[]>([])
+  // brands/types are loaded so filtering can be added later — not used in UI yet
+  const [, setBrands] = useState<CatalogBrand[]>([])
+  const [, setTypes] = useState<CatalogType[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
@@ -24,12 +27,12 @@ export default function CatalogPage() {
     setLoading(true)
     try {
       const [itemsResponse, brandsData, typesData] = await Promise.all([
-        catalogApi.getItems(page, 12),
+        catalogApi.getItems(page, PAGE_SIZE),
         catalogApi.getCatalogBrands(),
-        catalogApi.getCatalogTypes()
+        catalogApi.getCatalogTypes(),
       ])
-      setItems(itemsResponse.content || [])
-      setTotalPages(itemsResponse.totalPages || 1)
+      setItems(itemsResponse.data || [])
+      setTotalPages(Math.max(1, Math.ceil((itemsResponse.count || 0) / (itemsResponse.pageSize || PAGE_SIZE))))
       setBrands(brandsData)
       setTypes(typesData)
     } catch (error) {

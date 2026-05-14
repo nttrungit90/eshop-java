@@ -1,8 +1,8 @@
 /**
- * Converted from: src/WebApp/Components/App.razor
- *
- * Main application component with routing.
+ * Application shell + routing. Pushes the OIDC access token into the shared
+ * axios client whenever it changes so all backend calls are auth'd.
  */
+import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { useAuth } from 'react-oidc-context'
 import Header from './components/layout/Header'
@@ -12,9 +12,14 @@ import CartPage from './components/cart/CartPage'
 import CheckoutPage from './components/checkout/CheckoutPage'
 import OrdersPage from './components/orders/OrdersPage'
 import { CartProvider } from './context/CartContext'
+import { setAuthToken } from './api/client'
 
 function App() {
   const auth = useAuth()
+
+  useEffect(() => {
+    setAuthToken(auth.user?.access_token)
+  }, [auth.user?.access_token])
 
   if (auth.isLoading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>

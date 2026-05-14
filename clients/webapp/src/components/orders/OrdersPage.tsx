@@ -1,44 +1,56 @@
 /**
- * Converted from: src/WebApp/Components/Pages/Orders.razor
- *
- * Orders history page.
+ * Orders history. Uses the OrderSummary shape returned by GET /api/orders
+ * (orderNumber, date, status, total) — matches the Java OrderSummaryDto and
+ * mirrors what the .NET WebApp's Razor page showed.
  */
 import { useState, useEffect } from 'react'
 import { useAuth } from 'react-oidc-context'
 import { orderingApi } from '../../api/orderingApi'
-import { Order } from '../../types'
+import { OrderSummary } from '../../types'
+
+const STATUS_STYLE: Record<string, string> = {
+  Submitted: 'bg-yellow-100 text-yellow-800',
+  AwaitingValidation: 'bg-yellow-100 text-yellow-800',
+  StockConfirmed: 'bg-blue-100 text-blue-800',
+  Paid: 'bg-green-100 text-green-800',
+  Shipped: 'bg-blue-100 text-blue-800',
+  Cancelled: 'bg-red-100 text-red-800',
+}
 
 export default function OrdersPage() {
   const auth = useAuth()
-  const [orders, setOrders] = useState<Order[]>([])
+  const [orders, setOrders] = useState<OrderSummary[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    loadOrders()
-  }, [auth.user])
-
-  async function loadOrders() {
     if (!auth.isAuthenticated) {
       setLoading(false)
       return
     }
+    loadOrders()
+  }, [auth.isAuthenticated, auth.user?.access_token])
 
+  async function loadOrders() {
+    setLoading(true)
+    setError('')
     try {
-      const data = await orderingApi.getOrders(auth.user?.access_token)
+      const data = await orderingApi.getOrders()
       setOrders(data)
-    } catch (error) {
-      console.error('Failed to load orders', error)
+    } catch (err) {
+      console.error('Failed to load orders', err)
+      setError('Failed to load orders.')
     } finally {
       setLoading(false)
     }
   }
 
-  async function handleCancelOrder(orderId: number) {
+  async function handleCancelOrder(orderNumber: number) {
     try {
-      await orderingApi.cancelOrder(orderId, auth.user?.access_token)
+      await orderingApi.cancelOrder(orderNumber)
       loadOrders()
-    } catch (error) {
-      console.error('Failed to cancel order', error)
+    } catch (err) {
+      console.error('Failed to cancel order', err)
     }
   }
 
@@ -76,54 +88,43 @@ export default function OrdersPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8">My Orders</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold">My Orders</h1>
+        <button
+          onClick={loadOrders}
+          className="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded"
+        >
+          Refresh
+        </button>
+      </div>
 
-      <div className="space-y-6">
-        {orders.map(order => (
-          <div key={order.orderId} className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex justify-between items-start mb-4">
+      {error && (
+        <div className="bg-red-100 text-red-700 p-4 rounded mb-6">{error}</div>
+      )}
+
+      <div className="space-y-4">
+        {orders.map((order) => (
+          <div key={order.orderNumber} className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-lg font-bold">Order #{order.orderId}</h3>
+                <h3 className="text-lg font-bold">Order #{order.orderNumber}</h3>
                 <p className="text-gray-600 text-sm">
-                  {new Date(order.date).toLocaleDateString()}
+                  {new Date(order.date).toLocaleString()}
                 </p>
               </div>
-              <div className="text-right">
-                <span className={`inline-block px-3 py-1 rounded text-sm font-medium ${
-                  order.status === 'Paid' ? 'bg-green-100 text-green-800' :
-                  order.status === 'Shipped' ? 'bg-blue-100 text-blue-800' :
-                  order.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                  'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {order.status}
-                </span>
+              <div className="text-right space-y-2">
+                <div>
+                  <span className={`inline-block px-3 py-1 rounded text-sm font-medium ${STATUS_STYLE[order.status] || 'bg-gray-100 text-gray-800'}`}>
+                    {order.status}
+                  </span>
+                </div>
+                <div className="text-xl font-bold">${order.total.toFixed(2)}</div>
               </div>
             </div>
-
-            <div className="border-t pt-4">
-              <div className="space-y-2">
-                {order.orderItems.map((item, index) => (
-                  <div key={index} className="flex justify-between">
-                    <span>{item.productName} x {item.units}</span>
-                    <span>${(item.unitPrice * item.units).toFixed(2)}</span>
-                  </div>
-                ))}
-              </div>
-              <hr className="my-4" />
-              <div className="flex justify-between font-bold">
-                <span>Total</span>
-                <span>${order.total.toFixed(2)}</span>
-              </div>
-            </div>
-
-            <div className="mt-4 text-sm text-gray-600">
-              <p>Ship to: {order.street}, {order.city}, {order.state} {order.zipCode}</p>
-            </div>
-
-            {(order.status === 'Submitted' || order.status === 'Awaiting Validation') && (
+            {(order.status === 'Submitted' || order.status === 'AwaitingValidation' || order.status === 'StockConfirmed') && (
               <button
-                onClick={() => handleCancelOrder(order.orderId)}
-                className="mt-4 text-red-500 hover:text-red-700"
+                onClick={() => handleCancelOrder(order.orderNumber)}
+                className="mt-4 text-red-500 hover:text-red-700 text-sm"
               >
                 Cancel Order
               </button>

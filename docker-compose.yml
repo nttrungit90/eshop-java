@@ -413,6 +413,27 @@ services:
     networks:
       - eshop-network
 
+  # =============================================================================
+  # FRONTEND — React SPA (replaces .NET Blazor WebApp)
+  # =============================================================================
+
+  webapp:
+    build:
+      context: ./clients/webapp
+      dockerfile: Dockerfile
+    container_name: eshop-webapp
+    ports:
+      - "8080:80"
+    depends_on:
+      catalog-service:
+        condition: service_started
+      basket-service:
+        condition: service_started
+      ordering-api:
+        condition: service_started
+    networks:
+      - eshop-network
+
 networks:
   eshop-network:
     driver: bridge

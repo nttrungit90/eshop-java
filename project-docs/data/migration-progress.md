@@ -88,15 +88,65 @@ The Java `identity-service` module was **removed**. Identity is now served by **
 - **OpenTelemetry/OTLP**: Removed OTLP metrics/tracing export from Java service configs (commit `b614c08`); Jaeger receives traces via `MANAGEMENT_OTLP_TRACING_ENDPOINT` env in compose
 - **Catalog GET endpoints**: Use AntPathRequestMatcher for permitAll (commit `4ade30f`)
 
+### Phase 4 — Ordering API (commits `9100fc3` and follow-ups)
+
+The showcase migration — DDD aggregates, domain events, CQRS, idempotency, transactional outbox. See [`ordering-ddd-design.md`](ordering-ddd-design.md) for the full design.
+
+- **P4-T1**: `application.yml` with Aspire-managed Postgres/RabbitMQ + Keycloak OIDC
+- **P4-T2**: Maven `BUILD SUCCESS` on all 9 ordering modules
+- **P4-T3**: `ordering-api` added to docker-compose.yml on port 9102
+- **P4-T4**: `.NET AppHost` flag `useJavaOrdering = true` added
+- **P4-T5**: Initial state-machine handlers (`OrderingEventListener`) — GracePeriodConfirmed → AwaitingValidation → StockConfirmed → Paid; StockRejected / PaymentFailed → Cancelled
+- **P4-T6**: Full DDD/CQRS/Outbox refactor (replaces inline controller logic):
+  - `Order` / `OrderItem` / `Buyer` / `PaymentMethod` aggregates with private collections and invariants in methods
+  - 8 domain events raised by aggregates (OrderStartedDomainEvent, OrderStatusChangedTo{AwaitingValidation,StockConfirmed,Paid}DomainEvent, OrderShipped/CancelledDomainEvent, BuyerAndPaymentMethodVerifiedDomainEvent); dispatched via Spring Data `@DomainEvents` synchronously inside the originating tx
+  - 7 domain event handlers (`ValidateOrAddBuyerAggregate…`, `UpdateOrderWhenBuyerAndPaymentMethodVerified…`, `OrderStatusChangedTo*DomainEventHandler`, `OrderShippedDomainEventHandler`, `OrderCancelledDomainEventHandler`)
+  - CQRS `CommandBus` + 7 commands/handlers (CreateOrder, CreateOrderDraft, CancelOrder, ShipOrder, Set{AwaitingValidation,StockConfirmed,Paid}OrderStatus)
+  - Idempotency: `Request` entity → `ordering.requests` + `IdempotentCommandExecutor` wraps every state-changing command
+  - Transactional outbox: `OrderingIntegrationEventLogEntry` → `ordering."IntegrationEventLog"` (PascalCase, ordinal state); background `@Scheduled` relay drains and publishes to RabbitMQ
+  - Tolerant `DefaultClassMapper` in shared `RabbitMQConfig` so cross-service `__TypeId__` headers don't DLX messages
+  - Schema: `ordering.*` PascalCase columns, HiLo sequences with `pooled-lo` optimizer matching EF Core
+  - New endpoints: `POST /api/orders/draft`, `GET /api/orders/cardtypes`
+  - Validators: cardNumber 12–19, `@FutureOrPresent` cardExpiration, items non-empty
+
+### Phase 8 — Infra to docker-compose (commit `92c1f42`)
+
+Postgres / Redis / RabbitMQ are now owned by `docker-compose.yml`; Aspire only launches the (now-legacy) Blazor WebApp.
+
+- **P8-T1**: Add `postgres` (ankane/pgvector:latest, port 5432), `redis` (8.2, 6379), `rabbitmq` (4.2-management, 5672/15672) to compose with healthchecks
+- **P8-T2**: `infrastructure/postgres/init.sql` creates `catalogdb` / `orderingdb` / `webhooksdb` on first boot of an empty volume
+- **P8-T3**: Reuse the existing `eshop-postgres-data` named volume so prior order/buyer data survived the cut-over
+- **P8-T4**: Every Java service's `host.docker.internal:{5432,5672}` → compose service names (`postgres`, `rabbitmq`); basket Redis 6380 → 6379; mobile-bff route → `ordering-api:9102`
+- **P8-T5**: `depends_on: condition: service_healthy` health gates added to all infra-dependent Java services
+- **P8-T6**: `.NET AppHost` rewritten — drops `AddPostgres/AddRedis/AddRabbitMQ`, gives WebApp explicit `ConnectionStrings__eventbus` env
+
+### Phase 7 — React WebApp (this commit)
+
+Replaces the .NET Blazor WebApp with the existing React SPA at `clients/webapp/`. The entire stack now runs from `docker compose up -d` with no `dotnet run` required.
+
+- **P7-T1**: Centralised axios client (`src/api/client.ts`) — appends `?api-version=1.0`, injects `Authorization: Bearer <token>` from the OIDC session via `setAuthToken()`
+- **P7-T2**: Type fixes for the Java wire format — `PaginatedResponse<T>` switches to `{pageIndex, pageSize, count, data}` shape, new `OrderSummary` type for the list endpoint, `Order` keeps the detail shape
+- **P7-T3**: Catalog API client — fixes endpoint paths (`/catalogTypes`, `/catalogBrands`, `/items/by/{name}`), picture URL helper hits `/api/catalog/items/{id}/pic`
+- **P7-T4**: Ordering API client — sends `x-requestid` UUID on every POST/PUT (idempotency), converts `MM/YY` → ISO Instant for `cardExpiration`, sends `quantity` (not `units`) in items, fills `userId`/`userName`/`buyer` from the JWT
+- **P7-T5**: `CartContext` only syncs with basket-service when authenticated (avoids 401 for anonymous browsers)
+- **P7-T6**: `OrdersPage` rewritten to use the summary shape (orderNumber/date/status/total), with retry-cancel for in-flight orders
+- **P7-T7**: `webapp` service added to docker-compose on port 8080 — nginx serves the SPA + proxies `/api/{catalog,basket,orders}` to the Java backends, keeping the browser same-origin
+- **P7-T8**: Dockerfile switched to copy-prebuilt pattern (build via `npm run build` on the host) to sidestep npm-registry network issues inside the docker builder
+- **P7-T9**: Keycloak `webapp-spa` realm client already configured with `redirectUris=[http://localhost:8080/authentication/login-callback]` and `webOrigins=[http://localhost:8080]`; no realm change needed
+
+End-to-end verified after Phase 7: SPA loads at http://localhost:8080, catalog renders, login redirects through Keycloak, checkout posts via x-requestid idempotency, Submitted → Paid transitions visible on /orders.
+
 ## Pending Phases
 
-- **Phase 4 — Ordering API**: `application.yml` still uses localhost defaults; not in docker-compose; AppHost flag not added
-- **Phase 7 — WebApp**: not configured to point at Java backends; not in docker-compose
-- **Phase 8 — Infra to docker-compose**: Postgres/Redis/RabbitMQ still managed by .NET Aspire (Keycloak is already in compose)
+_None — migration complete. The .NET WebApp (Blazor Server) can be removed from the Aspire AppHost; the eShop stack runs from `docker compose up -d` alone._
 
-## Next Task
+## Optional follow-ups
 
-**P4-T1**: Update `services/ordering/ordering-api/src/main/resources/application.yml` with Aspire-managed Postgres/RabbitMQ credentials (Phase 4 — Ordering API)
+- Real-time order status in the React SPA (SSE/WebSocket endpoint on ordering-api, or just poll)
+- Remove `.NET AppHost` entirely — only kept to launch the Blazor WebApp; React replaces that
+- Tests for the DDD path (@DataJpaTest for domain events, slice tests per handler)
+- Production hardening: secrets out of `docker-compose.yml`, separate prod profile, K8s manifests
+- Remaining audit items (logged status-guard no-ops, FluentValidation parity for cancel/ship commands)
 
 ## Notes
 
@@ -104,4 +154,5 @@ The Java `identity-service` module was **removed**. Identity is now served by **
 - New modules introduced beyond the original plan: **mobile-bff** (Spring Cloud Gateway routing proxy) and **webhooks-client** (OAuth2 subscriber demo)
 - Payment-processor and order-processor were the only stub services needing real implementation; others had full implementations needing config + compose entries
 - All Java services consuming .NET events must use raw Message + ObjectMapper pattern (not typed @RabbitListener params)
-- Phase 8 is still pending: Postgres, Redis, RabbitMQ remain on .NET Aspire infrastructure for now
+- Cross-service integration-event interop requires a tolerant `DefaultClassMapper` in `RabbitMQConfig` because each service has its own FQN for "the same" event class
+- SPA architecture: nginx serves the SPA and proxies `/api/*` to the Java backends, so the browser is always same-origin to backend calls — only the Keycloak login flow is cross-origin (handled by the realm's `webOrigins` list)

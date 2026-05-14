@@ -5,6 +5,7 @@
  */
 import { CatalogItem } from '../../types'
 import { useCart } from '../../context/CartContext'
+import { catalogApi } from '../../api/catalogApi'
 
 interface ItemCardProps {
   item: CatalogItem
@@ -12,6 +13,7 @@ interface ItemCardProps {
 
 export default function ItemCard({ item }: ItemCardProps) {
   const { addItem } = useCart()
+  const picUrl = catalogApi.pictureUrl(item)
 
   function handleAddToCart() {
     addItem({
@@ -20,7 +22,7 @@ export default function ItemCard({ item }: ItemCardProps) {
       productName: item.name,
       unitPrice: item.price,
       quantity: 1,
-      pictureUrl: item.pictureUri || `/pics/${item.pictureFileName}`
+      pictureUrl: picUrl,
     })
   }
 
@@ -28,7 +30,7 @@ export default function ItemCard({ item }: ItemCardProps) {
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
       <div className="h-48 bg-gray-100 flex items-center justify-center">
         <img
-          src={item.pictureUri || `/pics/${item.pictureFileName}`}
+          src={picUrl}
           alt={item.name}
           className="max-h-full max-w-full object-contain"
           onError={(e) => {

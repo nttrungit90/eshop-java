@@ -7,7 +7,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from 'react-oidc-context'
 import { useCart } from '../../context/CartContext'
-import { orderingApi, CreateOrderRequest } from '../../api/orderingApi'
+import { orderingApi, CheckoutForm } from '../../api/orderingApi'
 
 export default function CheckoutPage() {
   const navigate = useNavigate()
@@ -16,17 +16,29 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // Default future-dated expiration so the @FutureOrPresent validator on the
+  // Java side accepts the submission with the demo card number.
   const [form, setForm] = useState({
-    street: '',
-    city: '',
-    state: '',
+    street: '15703 NE 61st Ct',
+    city: 'Redmond',
+    state: 'WA',
     country: 'USA',
-    zipCode: '',
+    zipCode: '98052',
     cardNumber: '4012888888881881',
     cardHolderName: '',
-    cardExpiration: '12/25',
+    cardExpiration: '12/27',
     cardSecurityNumber: '123',
   })
+
+  if (!auth.isAuthenticated) {
+    return (
+      <div className="text-center py-12">
+        <h1 className="text-3xl font-bold mb-4">Please Sign In</h1>
+        <p className="text-gray-600 mb-8">You need to be signed in to check out.</p>
+        <button onClick={() => auth.signinRedirect()} className="bg-primary text-white px-6 py-3 rounded">Sign In</button>
+      </div>
+    )
+  }
 
   if (items.length === 0) {
     navigate('/cart')
@@ -39,24 +51,29 @@ export default function CheckoutPage() {
     setError('')
 
     try {
-      const orderRequest: CreateOrderRequest = {
+      const userId = auth.user?.profile.sub
+      const userName = auth.user?.profile.name || auth.user?.profile.preferred_username || 'unknown'
+      if (!userId) throw new Error('No user id in JWT')
+
+      const payload: CheckoutForm = {
         ...form,
         cardTypeId: 1,
-        items: items.map(item => ({
+        items: items.map((item) => ({
           productId: item.productId,
           productName: item.productName,
           unitPrice: item.unitPrice,
           discount: 0,
-          units: item.quantity,
+          quantity: item.quantity,
           pictureUrl: item.pictureUrl,
         })),
       }
 
-      await orderingApi.createOrder(orderRequest, auth.user?.access_token)
+      await orderingApi.createOrder(payload, userId, userName as string)
       clearCart()
       navigate('/orders')
-    } catch (err) {
-      setError('Failed to create order. Please try again.')
+    } catch (err: any) {
+      const detail = err?.response?.data ? JSON.stringify(err.response.data) : err.message
+      setError(`Failed to create order: ${detail}`)
       console.error(err)
     } finally {
       setLoading(false)

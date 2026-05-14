@@ -1,0 +1,7 @@
+# dist is intentionally NOT excluded — Dockerfile is a copy-prebuilt pattern
+# that bundles the host-built dist/ into the nginx image.
+node_modules
+.vscode
+.idea
+*.log
+.DS_Store
