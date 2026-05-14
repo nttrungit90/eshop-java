@@ -1,20 +1,14 @@
 /**
  * Site-wide header — full visual port of .NET Blazor HeaderBar.razor.
  *
- * Structure (matches eshop-header / eshop-header-hero / eshop-header-container):
- *   - Outer .eshop-header: max-width 120rem, centered
- *   - .eshop-header-hero: absolutely-positioned background image (full bleed)
- *   - .eshop-header-container: relative — holds the navbar at top and the
- *     h1/subtitle at the bottom
+ * The <header> itself defines the hero height; the image is absolutely
+ * positioned behind, full-bleed (no max-width). Content (navbar + page
+ * title overlay) sits on top in a relative wrapper with the same height,
+ * so layout is independent of the image's intrinsic dimensions.
  *
- * Two variants:
- *   - home (catalog at "/" or "/catalog"): tall hero, header-home.webp,
- *     38rem container — the "Ready for a new adventure?" landing banner
- *   - inner: short hero, header.webp, 15rem container — used on all
- *     other pages with the page-specific title overlaid
- *
- * Page titles + subtitles come from PageHeaderContext (set by each page via
- * usePageHeader(…)). Mirrors Blazor's SectionContent + SectionOutlet wiring.
+ * Heights and image source match Blazor:
+ *   home (catalog at "/" or "/catalog") → 38rem, header-home.webp
+ *   inner page                          → 15rem, header.webp
  */
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from 'react-oidc-context'
@@ -29,23 +23,21 @@ export default function SiteHeader() {
 
   const isHome = pathname === '/' || pathname === '/catalog'
   const heroImg = isHome ? '/images/header-home.webp' : '/images/header.webp'
-  const containerHeight = isHome ? 'h-[38rem]' : 'h-60'
+  const heightClass = isHome ? 'h-[38rem]' : 'h-60'
 
   return (
-    <header className={`relative ${isHome ? 'eshop-header home' : 'eshop-header'} max-w-[120rem] mx-auto`}>
-      {/* Hero background image, absolutely positioned full-bleed */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <img
-          src={heroImg}
-          alt=""
-          className="w-full h-full object-cover object-center"
-        />
-      </div>
+    <header className={`relative w-full ${heightClass} overflow-hidden mb-12`}>
+      {/* Hero image — full bleed behind everything */}
+      <img
+        src={heroImg}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover object-center select-none"
+      />
 
-      {/* Foreground: navbar + intro text */}
-      <div className={`relative mx-4 md:mx-12 lg:mx-40 ${containerHeight} mb-16`}>
+      {/* Foreground content sits on the image */}
+      <div className="relative h-full mx-4 md:mx-12 lg:mx-40 flex flex-col">
         {/* Top navbar */}
-        <nav className="flex items-center justify-end gap-6 pt-5">
+        <nav className="flex items-center justify-end gap-6 pt-5 shrink-0">
           <Link to="/" className="mr-auto">
             <img
               src="/images/logo-header.svg"
@@ -97,9 +89,9 @@ export default function SiteHeader() {
           )}
         </nav>
 
-        {/* Bottom intro overlay: page title + subtitle */}
+        {/* Bottom-left intro overlay: title + subtitle */}
         {(title || subtitle) && (
-          <div className="absolute left-0 bottom-12 max-w-3xl">
+          <div className="mt-auto mb-12 max-w-3xl">
             {title && (
               <h1 className="text-black text-4xl md:text-5xl lg:text-6xl font-bold leading-none m-0">
                 {title}
