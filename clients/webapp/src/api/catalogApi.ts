@@ -7,10 +7,29 @@ import { CatalogItem, CatalogBrand, CatalogType, PaginatedResponse } from '../ty
 const API_URL = '/api/catalog'
 
 export const catalogApi = {
-  async getItems(pageIndex = 0, pageSize = 12): Promise<PaginatedResponse<CatalogItem>> {
-    const { data } = await client.get(`${API_URL}/items`, {
-      params: { pageIndex, pageSize },
-    })
+  /**
+   * List items, optionally filtered by brand and/or type. Routes to the
+   * Java catalog endpoints that mirror the .NET ones:
+   *   - both filters → /items/type/{typeId}/brand/{brandId}
+   *   - type only    → /items/type/{typeId}/brand
+   *   - brand only   → /items/type/all/brand/{brandId}
+   *   - neither      → /items
+   */
+  async getItems(
+    pageIndex = 0,
+    pageSize = 12,
+    brandId?: number | null,
+    typeId?: number | null,
+  ): Promise<PaginatedResponse<CatalogItem>> {
+    let path = `${API_URL}/items`
+    if (typeId != null && brandId != null) {
+      path = `${API_URL}/items/type/${typeId}/brand/${brandId}`
+    } else if (typeId != null) {
+      path = `${API_URL}/items/type/${typeId}/brand`
+    } else if (brandId != null) {
+      path = `${API_URL}/items/type/all/brand/${brandId}`
+    }
+    const { data } = await client.get(path, { params: { pageIndex, pageSize } })
     return data
   },
 
