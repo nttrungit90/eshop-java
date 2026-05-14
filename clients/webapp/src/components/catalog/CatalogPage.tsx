@@ -11,14 +11,15 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { catalogApi } from '../../api/catalogApi'
 import { CatalogItem, CatalogBrand, CatalogType } from '../../types'
 import ItemCard from './ItemCard'
-import Hero from '../layout/Hero'
 import CatalogSearch from './CatalogSearch'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
+import { usePageHeader } from '../layout/PageHeaderContext'
 
 const PAGE_SIZE = 12
 
 export default function CatalogPage() {
   useDocumentTitle('AdventureWorks')
+  usePageHeader('Ready for a new adventure?', 'Start the season with the latest in clothing and equipment.')
   const [params] = useSearchParams()
 
   const brandId = params.get('brand') ? parseInt(params.get('brand')!, 10) : null
@@ -66,8 +67,6 @@ export default function CatalogPage() {
 
   return (
     <div>
-      <Hero />
-
       <div className="flex flex-col md:flex-row gap-8">
         <CatalogSearch brands={brands} types={types} brandId={brandId} typeId={typeId} />
 

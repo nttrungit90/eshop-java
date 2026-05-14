@@ -8,6 +8,7 @@ import { useAuth } from 'react-oidc-context'
 import { orderingApi } from '../../api/orderingApi'
 import { OrderSummary } from '../../types'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
+import { usePageHeader } from '../layout/PageHeaderContext'
 
 const STATUS_STYLE: Record<string, string> = {
   Submitted: 'bg-yellow-100 text-yellow-800',
@@ -20,6 +21,7 @@ const STATUS_STYLE: Record<string, string> = {
 
 export default function OrdersPage() {
   useDocumentTitle('My Orders | AdventureWorks')
+  usePageHeader('Orders')
   const auth = useAuth()
   const [orders, setOrders] = useState<OrderSummary[]>([])
   const [loading, setLoading] = useState(true)
@@ -90,8 +92,7 @@ export default function OrdersPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">My Orders</h1>
+      <div className="flex items-center justify-end mb-6">
         <button
           onClick={loadOrders}
           className="text-sm bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded"

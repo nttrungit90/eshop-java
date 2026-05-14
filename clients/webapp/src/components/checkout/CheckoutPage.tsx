@@ -16,6 +16,7 @@ import { useAuth } from 'react-oidc-context'
 import { useCart } from '../../context/CartContext'
 import { orderingApi, CheckoutForm } from '../../api/orderingApi'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
+import { usePageHeader } from '../layout/PageHeaderContext'
 
 function readClaim(profile: any | undefined, key: string): string {
   return (profile?.[key] as string) || ''
@@ -23,6 +24,7 @@ function readClaim(profile: any | undefined, key: string): string {
 
 export default function CheckoutPage() {
   useDocumentTitle('Checkout | AdventureWorks')
+  usePageHeader('Checkout')
   const navigate = useNavigate()
   const auth = useAuth()
   const { items, clearCart } = useCart()
@@ -106,7 +108,7 @@ export default function CheckoutPage() {
 
   return (
     <div>
-      <h1 className="text-4xl font-extrabold mb-8">Checkout</h1>
+      {/* Page title "Checkout" is rendered in the site hero */}
 
       {error && (
         <div className="bg-red-100 text-red-700 p-4 rounded mb-6">{error}</div>

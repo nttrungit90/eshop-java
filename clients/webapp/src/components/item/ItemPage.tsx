@@ -12,6 +12,7 @@ import { useCart } from '../../context/CartContext'
 import { catalogApi } from '../../api/catalogApi'
 import { CatalogItem } from '../../types'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
+import { usePageHeader } from '../layout/PageHeaderContext'
 
 export default function ItemPage() {
   const { itemId } = useParams<{ itemId: string }>()
@@ -23,6 +24,7 @@ export default function ItemPage() {
   const [busy, setBusy] = useState(false)
 
   useDocumentTitle(item ? `${item.name} | AdventureWorks` : 'AdventureWorks')
+  usePageHeader(item?.name ?? '', item?.catalogBrand?.brand ?? '')
 
   useEffect(() => {
     if (!itemId) return
@@ -91,10 +93,7 @@ export default function ItemPage() {
         />
 
         <div>
-          <div className="text-sm uppercase tracking-wide text-gray-500 mb-2">
-            {item.catalogBrand?.brand}
-          </div>
-          <h1 className="text-4xl font-bold mb-3">{item.name}</h1>
+          {/* Brand + name are rendered in the site hero — keep the page body focused on description + CTA */}
           <p className="text-gray-700 leading-relaxed mb-6">{item.description}</p>
 
           <p className="mb-4 text-sm">

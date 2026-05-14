@@ -14,9 +14,11 @@ import { Link } from 'react-router-dom'
 import { useAuth } from 'react-oidc-context'
 import { useCart } from '../../context/CartContext'
 import { useDocumentTitle } from '../../hooks/useDocumentTitle'
+import { usePageHeader } from '../layout/PageHeaderContext'
 
 export default function CartPage() {
   useDocumentTitle('Shopping Bag | AdventureWorks')
+  usePageHeader('Shopping bag')
   const auth = useAuth()
   const { items, updateQuantity, total, itemCount } = useCart()
   const [pending, setPending] = useState<Record<string, number>>({})
@@ -34,8 +36,7 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div>
-        <h1 className="text-4xl font-extrabold mb-6">Shopping bag</h1>
-        <p>
+        <p className="mt-6">
           Your shopping bag is empty.{' '}
           <Link to="/catalog" className="text-primary underline">Continue shopping.</Link>
         </p>
@@ -57,8 +58,6 @@ export default function CartPage() {
 
   return (
     <div>
-      <h1 className="text-4xl font-extrabold mb-8">Shopping bag</h1>
-
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_22rem] gap-10">
         {/* Items list */}
         <section>
