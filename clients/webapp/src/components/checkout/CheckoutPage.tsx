@@ -15,12 +15,14 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from 'react-oidc-context'
 import { useCart } from '../../context/CartContext'
 import { orderingApi, CheckoutForm } from '../../api/orderingApi'
+import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 
 function readClaim(profile: any | undefined, key: string): string {
   return (profile?.[key] as string) || ''
 }
 
 export default function CheckoutPage() {
+  useDocumentTitle('Checkout | AdventureWorks')
   const navigate = useNavigate()
   const auth = useAuth()
   const { items, clearCart } = useCart()

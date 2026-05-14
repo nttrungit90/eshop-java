@@ -11,6 +11,7 @@ import { useAuth } from 'react-oidc-context'
 import { useCart } from '../../context/CartContext'
 import { catalogApi } from '../../api/catalogApi'
 import { CatalogItem } from '../../types'
+import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 
 export default function ItemPage() {
   const { itemId } = useParams<{ itemId: string }>()
@@ -20,6 +21,8 @@ export default function ItemPage() {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [busy, setBusy] = useState(false)
+
+  useDocumentTitle(item ? `${item.name} | AdventureWorks` : 'AdventureWorks')
 
   useEffect(() => {
     if (!itemId) return

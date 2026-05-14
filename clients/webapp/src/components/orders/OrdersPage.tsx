@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from 'react-oidc-context'
 import { orderingApi } from '../../api/orderingApi'
 import { OrderSummary } from '../../types'
+import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 
 const STATUS_STYLE: Record<string, string> = {
   Submitted: 'bg-yellow-100 text-yellow-800',
@@ -18,6 +19,7 @@ const STATUS_STYLE: Record<string, string> = {
 }
 
 export default function OrdersPage() {
+  useDocumentTitle('My Orders | AdventureWorks')
   const auth = useAuth()
   const [orders, setOrders] = useState<OrderSummary[]>([])
   const [loading, setLoading] = useState(true)

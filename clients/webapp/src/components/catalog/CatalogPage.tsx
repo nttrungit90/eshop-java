@@ -8,10 +8,12 @@ import { catalogApi } from '../../api/catalogApi'
 import { CatalogItem, CatalogBrand, CatalogType } from '../../types'
 import ItemCard from './ItemCard'
 import Hero from '../layout/Hero'
+import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 
 const PAGE_SIZE = 12
 
 export default function CatalogPage() {
+  useDocumentTitle('AdventureWorks')
   const [items, setItems] = useState<CatalogItem[]>([])
   // brands/types are loaded so filtering can be added later — not used in UI yet
   const [, setBrands] = useState<CatalogBrand[]>([])
