@@ -133,8 +133,10 @@ Replaces the .NET Blazor WebApp with the existing React SPA at `clients/webapp/`
 - **P7-T7**: `webapp` service added to docker-compose on port 8080 — nginx serves the SPA + proxies `/api/{catalog,basket,orders}` to the Java backends, keeping the browser same-origin
 - **P7-T8**: Dockerfile switched to copy-prebuilt pattern (build via `npm run build` on the host) to sidestep npm-registry network issues inside the docker builder
 - **P7-T9**: Keycloak `webapp-spa` realm client already configured with `redirectUris=[http://localhost:8080/authentication/login-callback]` and `webOrigins=[http://localhost:8080]`; no realm change needed
+- **P7-T10** (visual parity): Ported Blazor brand assets — AdventureWorks logo SVGs, hero image (`header-home.webp`), Plus Jakarta Sans woff2s, icon SVGs (cart/user/etc.) — into `clients/webapp/public/`. Hero banner ("Ready for a new adventure?") restored on the catalog page; header/footer now use AdventureWorks logo on the brand purple bar; Tailwind theme switched to brand colors (`primary: #11118c`, `accent: #fde047`) and Plus Jakarta Sans as the default font
+- **P7-T11**: Fixed product image bug — `<img src>` requests bypass axios, so `?api-version=1.0` is now inlined in `catalogApi.pictureUrl()`. Catalog cards and the cart now render product photos correctly
 
-End-to-end verified after Phase 7: SPA loads at http://localhost:8080, catalog renders, login redirects through Keycloak, checkout posts via x-requestid idempotency, Submitted → Paid transitions visible on /orders.
+End-to-end verified after Phase 7: SPA loads at http://localhost:8080 with AdventureWorks visual brand, hero banner, real product images; catalog renders, login redirects through Keycloak, checkout posts via x-requestid idempotency, Submitted → Paid transitions visible on /orders.
 
 ## Pending Phases
 

@@ -1,22 +1,19 @@
 /**
- * Converted from: src/WebApp/Components/Layout/FooterBar.razor
- *
- * Application footer.
+ * Site footer — matches the .NET Blazor FooterBar with the small AdventureWorks
+ * mark and a tagline. The Java migration of dotnet/eShop runs the same scenarios.
  */
 export default function Footer() {
   return (
-    <footer className="bg-gray-800 text-white py-8">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0">
-            <span className="text-xl font-bold">eShop</span>
-            <p className="text-gray-400 text-sm mt-1">
-              Java/Spring Boot conversion of .NET eShop
-            </p>
-          </div>
-          <div className="text-gray-400 text-sm">
-            &copy; {new Date().getFullYear()} eShop Reference Application
-          </div>
+    <footer className="bg-primary text-white py-8 mt-12">
+      <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex items-center gap-3">
+          <img src="/images/logo-footer.svg" alt="AdventureWorks" className="h-8" />
+          <span className="text-sm opacity-80">
+            Built on Java / Spring Boot — a faithful migration of <code>dotnet/eShop</code>
+          </span>
+        </div>
+        <div className="text-sm opacity-70">
+          &copy; {new Date().getFullYear()} AdventureWorks Reference App
         </div>
       </div>
     </footer>

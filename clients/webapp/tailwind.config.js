@@ -7,8 +7,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#512BD4',
-        secondary: '#68217A',
+        // Approximate the AdventureWorks brand palette from .NET WebApp.
+        primary: '#11118c',
+        'primary-dark': '#0a0a5e',
+        accent: '#fde047',
+      },
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
       },
     },
   },

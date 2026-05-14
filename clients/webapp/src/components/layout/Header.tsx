@@ -1,7 +1,7 @@
 /**
- * Converted from: src/WebApp/Components/Layout/HeaderBar.razor
- *
- * Application header with navigation.
+ * Site header. Visuals mirror the .NET Blazor HeaderBar — AdventureWorks logo
+ * on the dark-purple bar, Catalog / My Orders nav, cart icon with badge,
+ * Login / username menu on the right.
  */
 import { Link } from 'react-router-dom'
 import { useAuth } from 'react-oidc-context'
@@ -12,49 +12,54 @@ export default function Header() {
   const { itemCount } = useCart()
 
   return (
-    <header className="bg-primary text-white shadow-lg">
+    <header className="bg-primary text-white">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="text-2xl font-bold">
-            eShop
+          <Link to="/" className="flex items-center">
+            <img src="/images/logo-header.svg" alt="AdventureWorks" className="h-8" />
           </Link>
 
-          <nav className="flex items-center space-x-6">
-            <Link to="/catalog" className="hover:text-gray-200">
-              Catalog
+          <nav className="flex items-center space-x-6 text-sm font-medium">
+            <Link to="/catalog" className="hover:opacity-80">
+              Products
             </Link>
 
             {auth.isAuthenticated && (
-              <Link to="/orders" className="hover:text-gray-200">
-                My Orders
+              <Link to="/orders" className="hover:opacity-80">
+                My orders
               </Link>
             )}
 
-            <Link to="/cart" className="relative hover:text-gray-200">
-              Cart
+            <Link to="/cart" className="relative hover:opacity-80 flex items-center" aria-label="Cart">
+              <img src="/icons/cart.svg" alt="" className="h-6 w-6 invert" />
               {itemCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 bg-accent text-primary text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                   {itemCount}
                 </span>
               )}
             </Link>
 
             {auth.isAuthenticated ? (
-              <div className="flex items-center space-x-4">
-                <span>{auth.user?.profile.name || auth.user?.profile.email}</span>
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
+                  <img src="/icons/user.svg" alt="" className="h-5 w-5 invert" />
+                  <span className="text-sm">
+                    {(auth.user?.profile.name as string) || (auth.user?.profile.preferred_username as string)}
+                  </span>
+                </div>
                 <button
                   onClick={() => auth.signoutRedirect()}
-                  className="bg-white text-primary px-4 py-2 rounded hover:bg-gray-100"
+                  className="text-sm bg-white text-primary px-3 py-1.5 rounded hover:bg-gray-100"
                 >
-                  Logout
+                  Log out
                 </button>
               </div>
             ) : (
               <button
                 onClick={() => auth.signinRedirect()}
-                className="bg-white text-primary px-4 py-2 rounded hover:bg-gray-100"
+                className="text-sm bg-white text-primary px-3 py-1.5 rounded hover:bg-gray-100"
               >
-                Login
+                Log in
               </button>
             )}
           </nav>

@@ -40,8 +40,9 @@ export const catalogApi = {
   /**
    * Build the picture URL for a catalog item. The /api/catalog/items/{id}/pic
    * endpoint returns the binary image; goes through the SPA's nginx proxy.
+   * <img src> bypasses our axios interceptor, so api-version must be inline.
    */
   pictureUrl(item: CatalogItem): string {
-    return item.pictureUri || `${API_URL}/items/${item.id}/pic`
+    return item.pictureUri || `${API_URL}/items/${item.id}/pic?api-version=1.0`
   },
 }

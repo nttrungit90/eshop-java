@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react'
 import { catalogApi } from '../../api/catalogApi'
 import { CatalogItem, CatalogBrand, CatalogType } from '../../types'
 import ItemCard from './ItemCard'
+import Hero from '../layout/Hero'
 
 const PAGE_SIZE = 12
 
@@ -42,17 +43,17 @@ export default function CatalogPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading catalog...</div>
-      </div>
-    )
-  }
-
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8">Catalog</h1>
+      <Hero />
+
+      {loading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading catalog…</div>
+        </div>
+      ) : (
+        <>
+      <h2 className="text-2xl font-bold mb-6">Featured products</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {items.map(item => (
@@ -86,6 +87,8 @@ export default function CatalogPage() {
             Next
           </button>
         </div>
+      )}
+        </>
       )}
     </div>
   )
