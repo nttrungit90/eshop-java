@@ -1,33 +1,39 @@
 /**
- * Converted from: src/WebApp/Components/Pages/Checkout.razor
+ * Checkout — mirrors .NET Blazor Components/Pages/Checkout/Checkout.razor.
  *
- * Checkout page for completing orders.
+ * Only the shipping address is collected on the form (defaulted from the
+ * Keycloak JWT claims address_street/city/state/country/zip_code, exactly
+ * as Blazor does). Card details ride along from JWT claims and the
+ * expiration is fixed to "1 year from now" — same shortcut the .NET
+ * WebApp's BasketState.CheckoutAsync uses.
+ *
+ * The order summary is on the Cart page; checkout is just shipping +
+ * "Place order".
  */
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from 'react-oidc-context'
 import { useCart } from '../../context/CartContext'
 import { orderingApi, CheckoutForm } from '../../api/orderingApi'
 
+function readClaim(profile: any | undefined, key: string): string {
+  return (profile?.[key] as string) || ''
+}
+
 export default function CheckoutPage() {
   const navigate = useNavigate()
   const auth = useAuth()
-  const { items, total, clearCart } = useCart()
+  const { items, clearCart } = useCart()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Default future-dated expiration so the @FutureOrPresent validator on the
-  // Java side accepts the submission with the demo card number.
+  // Defaults pulled from Keycloak claims (address_street, address_city, …).
   const [form, setForm] = useState({
-    street: '15703 NE 61st Ct',
-    city: 'Redmond',
-    state: 'WA',
-    country: 'USA',
-    zipCode: '98052',
-    cardNumber: '4012888888881881',
-    cardHolderName: '',
-    cardExpiration: '12/27',
-    cardSecurityNumber: '123',
+    street: readClaim(auth.user?.profile, 'address_street'),
+    city: readClaim(auth.user?.profile, 'address_city'),
+    state: readClaim(auth.user?.profile, 'address_state'),
+    country: readClaim(auth.user?.profile, 'address_country') || 'USA',
+    zipCode: readClaim(auth.user?.profile, 'address_zip_code'),
   })
 
   if (!auth.isAuthenticated) {
@@ -35,7 +41,7 @@ export default function CheckoutPage() {
       <div className="text-center py-12">
         <h1 className="text-3xl font-bold mb-4">Please Sign In</h1>
         <p className="text-gray-600 mb-8">You need to be signed in to check out.</p>
-        <button onClick={() => auth.signinRedirect()} className="bg-primary text-white px-6 py-3 rounded">Sign In</button>
+        <button onClick={() => auth.signinRedirect()} className="btn-brand">Sign In</button>
       </div>
     )
   }
@@ -52,23 +58,35 @@ export default function CheckoutPage() {
 
     try {
       const userId = auth.user?.profile.sub
-      const userName = auth.user?.profile.name || auth.user?.profile.preferred_username || 'unknown'
+      const userName = (auth.user?.profile.name as string) || (auth.user?.profile.preferred_username as string) || 'unknown'
       if (!userId) throw new Error('No user id in JWT')
 
+      // Card details from claims, expiration forced to 1y from now (matches .NET WebApp default).
+      const oneYearFromNow = new Date()
+      oneYearFromNow.setUTCFullYear(oneYearFromNow.getUTCFullYear() + 1)
+
       const payload: CheckoutForm = {
-        ...form,
+        street: form.street,
+        city: form.city,
+        state: form.state,
+        country: form.country,
+        zipCode: form.zipCode,
+        cardNumber: readClaim(auth.user?.profile, 'card_number') || '4012888888881881',
+        cardHolderName: readClaim(auth.user?.profile, 'card_holder') || userName,
+        cardExpiration: oneYearFromNow.toISOString(),
+        cardSecurityNumber: readClaim(auth.user?.profile, 'card_security_number') || '123',
         cardTypeId: 1,
-        items: items.map((item) => ({
-          productId: item.productId,
-          productName: item.productName,
-          unitPrice: item.unitPrice,
+        items: items.map((it) => ({
+          productId: it.productId,
+          productName: it.productName,
+          unitPrice: it.unitPrice,
           discount: 0,
-          quantity: item.quantity,
-          pictureUrl: item.pictureUrl,
+          quantity: it.quantity,
+          pictureUrl: it.pictureUrl,
         })),
       }
 
-      await orderingApi.createOrder(payload, userId, userName as string)
+      await orderingApi.createOrder(payload, userId, userName)
       clearCart()
       navigate('/orders')
     } catch (err: any) {
@@ -85,152 +103,96 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+    <div>
+      <h1 className="text-4xl font-extrabold mb-8">Checkout</h1>
 
       {error && (
-        <div className="bg-red-100 text-red-700 p-4 rounded mb-6">
-          {error}
-        </div>
+        <div className="bg-red-100 text-red-700 p-4 rounded mb-6">{error}</div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-bold mb-4">Shipping Address</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <label className="block text-sm font-medium mb-1">Street</label>
-              <input
-                type="text"
-                name="street"
-                value={form.street}
-                onChange={handleChange}
-                required
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">City</label>
+      <form onSubmit={handleSubmit}>
+        <section className="mb-8">
+          <h2 className="text-xl font-semibold pb-2 mb-5 border-b border-gray-300">
+            Shipping address
+          </h2>
+
+          <label className="block mb-4">
+            <span className="block text-sm text-gray-600 mb-1">Address</span>
+            <input
+              type="text"
+              name="street"
+              value={form.street}
+              onChange={handleChange}
+              required
+              className="w-full border border-black bg-white px-3 py-2 rounded"
+            />
+          </label>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            <label className="block">
+              <span className="block text-sm text-gray-600 mb-1">City</span>
               <input
                 type="text"
                 name="city"
                 value={form.city}
                 onChange={handleChange}
                 required
-                className="w-full border rounded px-3 py-2"
+                className="w-full border border-black bg-white px-3 py-2 rounded"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">State</label>
+            </label>
+            <label className="block">
+              <span className="block text-sm text-gray-600 mb-1">State</span>
               <input
                 type="text"
                 name="state"
                 value={form.state}
                 onChange={handleChange}
                 required
-                className="w-full border rounded px-3 py-2"
+                className="w-full border border-black bg-white px-3 py-2 rounded"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Country</label>
-              <input
-                type="text"
-                name="country"
-                value={form.country}
-                onChange={handleChange}
-                required
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Zip Code</label>
+            </label>
+            <label className="block">
+              <span className="block text-sm text-gray-600 mb-1">Zip code</span>
               <input
                 type="text"
                 name="zipCode"
                 value={form.zipCode}
                 onChange={handleChange}
                 required
-                className="w-full border rounded px-3 py-2"
+                className="w-full border border-black bg-white px-3 py-2 rounded"
               />
-            </div>
+            </label>
           </div>
-        </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-bold mb-4">Payment Information</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <label className="block text-sm font-medium mb-1">Card Number</label>
-              <input
-                type="text"
-                name="cardNumber"
-                value={form.cardNumber}
-                onChange={handleChange}
-                required
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
-            <div className="col-span-2">
-              <label className="block text-sm font-medium mb-1">Card Holder Name</label>
-              <input
-                type="text"
-                name="cardHolderName"
-                value={form.cardHolderName}
-                onChange={handleChange}
-                required
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Expiration</label>
-              <input
-                type="text"
-                name="cardExpiration"
-                value={form.cardExpiration}
-                onChange={handleChange}
-                placeholder="MM/YY"
-                required
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">CVV</label>
-              <input
-                type="text"
-                name="cardSecurityNumber"
-                value={form.cardSecurityNumber}
-                onChange={handleChange}
-                required
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
-          </div>
-        </div>
+          <label className="block">
+            <span className="block text-sm text-gray-600 mb-1">Country</span>
+            <input
+              type="text"
+              name="country"
+              value={form.country}
+              onChange={handleChange}
+              required
+              className="w-full border border-black bg-white px-3 py-2 rounded"
+            />
+          </label>
+        </section>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-bold mb-4">Order Summary</h2>
-          <div className="space-y-2">
-            {items.map(item => (
-              <div key={item.id} className="flex justify-between">
-                <span>{item.productName} x {item.quantity}</span>
-                <span>${(item.unitPrice * item.quantity).toFixed(2)}</span>
-              </div>
-            ))}
-            <hr className="my-4" />
-            <div className="flex justify-between font-bold text-lg">
-              <span>Total</span>
-              <span>${total.toFixed(2)}</span>
-            </div>
-          </div>
+        <div className="flex justify-between items-center pt-6 border-t border-black">
+          <Link
+            to="/cart"
+            className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+          >
+            <img src="/icons/arrow-left.svg" alt="" className="h-4 w-4" />
+            Back to the shopping bag
+          </Link>
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-brand"
+          >
+            {loading ? 'Processing…' : 'Place order'}
+          </button>
         </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-primary text-white py-3 rounded hover:bg-opacity-90 disabled:opacity-50"
-        >
-          {loading ? 'Processing...' : 'Place Order'}
-        </button>
       </form>
     </div>
   )
